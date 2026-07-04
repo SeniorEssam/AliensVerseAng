@@ -1,0 +1,93 @@
+<div class="landing-root" [class.dark]="isDark()" [class.is-custom-page]="hasApiHeader()">
+  <av-consent-banner></av-consent-banner>
+
+  @if (isLoading()) {
+    <div class="splash-screen-overlay">
+      <div class="splash-spinner"></div>
+      <h2 class="splash-text">AliensVerse</h2>
+    </div>
+  } @else {
+    <canvas #starCanvas class="star-canvas" [style.display]="hasApiHeader() ? 'none' : 'block'"></canvas>
+
+    @if (!hasApiHeader()) {
+      <nav class="navbar" [class.scrolled]="isScrolled()">
+        <div class="nav-inner">
+          <a
+            class="nav-logo"
+            (click)="scrollToSection('home')"
+            role="button"
+            tabindex="0"
+          >
+            <img [src]="getLogoSrc()" alt="Logo" class="logo-img" />
+            <span class="logo-text">{{
+              companyInfo()?.company_name || 'AliensVerse'
+            }}</span>
+          </a>
+
+          <ul class="nav-links">
+            @for (section of menuSections(); track section.id) {
+              <li>
+                <button class="nav-link" (click)="scrollToSection(section.id)">
+                  {{ section.menuTitle }}
+                </button>
+              </li>
+            }
+          </ul>
+
+          <div class="nav-actions">
+            @if (isLanguageSwitcherVisible()) {
+              <select
+                class="language-switcher"
+                [value]="currentLang()?.id"
+                (change)="changeLanguage($any($event.target).value)"
+              >
+                @for (lang of languages(); track lang.id) {
+                  <option [value]="lang.id">{{ lang.name }}</option>
+                }
+              </select>
+            }
+
+            <button
+              class="theme-toggle"
+              (click)="toggleTheme()"
+              [attr.aria-label]="
+                isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'
+              "
+            >
+              {{ isDark() ? 'Light' : 'Dark' }}
+            </button>
+
+            <button class="nav-cta" (click)="launchErp()">Launch ERP ›</button>
+
+            <button
+              class="hamburger"
+              (click)="isMobileMenuOpen.set(!isMobileMenuOpen())"
+              aria-label="Menu"
+            >
+              <span [class.open]="isMobileMenuOpen()"></span>
+              <span [class.open]="isMobileMenuOpen()"></span>
+              <span [class.open]="isMobileMenuOpen()"></span>
+            </button>
+          </div>
+        </div>
+
+        @if (isMobileMenuOpen()) {
+          <div class="mobile-menu">
+            @for (section of menuSections(); track section.id) {
+              <button class="mobile-link" (click)="scrollToSection(section.id)">
+                {{ section.menuTitle }}
+              </button>
+            }
+          </div>
+        }
+      </nav>
+    }
+
+    <main class="landing-main">
+      <av-page-renderer
+        [sections]="visibleSections()"
+        [isLoading]="isLoading()"
+      ></av-page-renderer>
+    </main>
+  }
+</div>

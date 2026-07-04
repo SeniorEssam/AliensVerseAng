@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>aliens-verse-app</title>
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #ffffff;
+      }
+      .global-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        color: #0f0e1a;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      }
+      .global-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(108, 71, 255, 0.15);
+        border-top-color: #6c47ff;
+        border-radius: 50%;
+        animation: global-spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      .global-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        background: linear-gradient(135deg, #6c47ff, #a855f7);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: global-pulse 2s infinite;
+      }
+      @keyframes global-spin {
+        to { transform: rotate(360deg); }
+      }
+      @keyframes global-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+    </style>
+  </head>
+  <body>
+    <av-root>
+      <div class="global-splash">
+        <div class="global-spinner"></div>
+        <h2 class="global-text">AliensVerse</h2>
+      </div>
+    </av-root>
+  </body>
+</html>

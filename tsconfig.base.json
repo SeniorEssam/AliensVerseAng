@@ -1,0 +1,33 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@aliens-verse/device-sdk": ["libs/sdk/device-sdk/src/index.ts"],
+      "@aliens-verse/activation-plugin": [
+        "libs/plugins/activation-plugin/src/index.ts"
+      ],
+      "@aliens-verse/api-sdk": ["libs/sdk/api-sdk/src/index.ts"],
+      "@aliens-verse/lookup-sdk": ["libs/sdk/lookup-sdk/src/index.ts"],
+      "@aliens-verse/auth-sdk": ["libs/sdk/auth-sdk/src/index.ts"],
+      "@aliens-verse/ui": ["libs/shared/ui/src/index.ts"],
+      "@aliens-verse/cookies": ["libs/utils/cookies/src/index.ts"],
+      "@aliens-verse/landing-page": ["libs/plugins/landing-page/src/index.ts"],
+      "@aliens-verse/auth-plugin": ["libs/plugins/auth-plugin/src/index.ts"],
+      "@aliens-verse/shell": ["libs/shell/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

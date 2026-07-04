@@ -1,0 +1,41 @@
+<header class="global-header">
+  <div class="logo-container" routerLink="/">
+    <av-logo 
+      [companyLogo]="companyInfo()?.company_logo" 
+      [companyLogoDark]="companyInfo()?.company_logo_dark"
+      className="main-logo"
+    ></av-logo>
+  </div>
+
+  <div class="nav-actions">
+    <!-- Language Selector -->
+    @if (languages().length > 0) {
+      <div class="lang-selector">
+        <button class="lang-trigger" (click)="toggleDropdown()">
+          @if (currentLang()?.logo_url) {
+            <img [src]="sanitizeUrl(currentLang()!.logo_url)" [alt]="currentLang()?.name" class="flag-icon">
+          }
+          <span>{{ currentLang()?.name }}</span>
+          <span class="chevron" [class.open]="isLangDropdownOpen">▼</span>
+        </button>
+
+        @if (isLangDropdownOpen) {
+          <div class="lang-dropdown">
+            @for (lang of languages(); track lang.id) {
+              <div 
+                class="lang-option" 
+                [class.active]="lang.id === currentLang()?.id"
+                (click)="selectLanguage(lang)"
+              >
+                @if (lang.logo_url) {
+                  <img [src]="sanitizeUrl(lang.logo_url)" alt="" class="flag-icon">
+                }
+                <span>{{ lang.name }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</header>

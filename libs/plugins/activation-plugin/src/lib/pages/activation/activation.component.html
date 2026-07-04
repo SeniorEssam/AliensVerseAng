@@ -1,0 +1,208 @@
+<!-- ════════════════════════════════════════════
+     DEVICE ACTIVATION PAGE — AliensVerse Platform
+     ════════════════════════════════════════════ -->
+<div class="activation-root" [class.dark]="isDark()">
+  <canvas #starCanvas class="star-canvas"></canvas>
+
+  <!-- ══════════════ NAVBAR ══════════════ -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <!-- Logo -->
+      <a class="nav-logo" role="button" tabindex="0">
+        <img [src]="getLogoSrc()" alt="Logo" class="logo-img" />
+        <span class="logo-text">{{
+          companyInfo()?.company_name || 'AliensVerse'
+        }}</span>
+      </a>
+
+      <!-- Actions -->
+      <div class="nav-actions">
+        <!-- Theme Toggle -->
+        <button
+          class="theme-toggle"
+          (click)="toggleTheme()"
+          [attr.aria-label]="
+            isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'
+          "
+          title="{{ isDark() ? 'Light Mode' : 'Dark Mode' }}"
+        >
+          @if (isDark()) {
+            <!-- Sun icon -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="5" />
+              <line x1="12" y1="1" x2="12" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="23" />
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+              <line x1="1" y1="12" x2="3" y2="12" />
+              <line x1="21" y1="12" x2="23" y2="12" />
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+            </svg>
+          } @else {
+            <!-- Moon icon -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          }
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════ HERO SECTION ══════════════ -->
+  <section class="hero-section">
+    <div class="hero-glow hero-glow--left"></div>
+    <div class="hero-glow hero-glow--right"></div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        <span>Device Activation</span>
+      </div>
+
+      <h1 class="hero-title">
+        Secure Your<br />
+        <span class="gradient-text">{{
+          companyInfo()?.company_name || 'AliensVerse'
+        }}</span>
+        <span class="gradient-text">Device</span>
+      </h1>
+
+      <p class="hero-desc">
+        Complete device verification to access your account securely.
+      </p>
+    </div>
+    <!-- ══════════════ ACTIVATION FORM ══════════════ -->
+    <div class="form-container">
+      <!-- Error Message -->
+      @if (errorMessage()) {
+        <div class="alert alert-error animate-fade-in">
+          <p>{{ errorMessage() }}</p>
+        </div>
+      }
+
+      <!-- Step 1: Initialize -->
+      @if (step() === 'init') {
+        <div class="form-content animate-slide-in">
+          <div class="form-header">
+            <h2>Authorize Your Device</h2>
+            <p>Enter your credentials to authorize this device</p>
+          </div>
+
+          <div class="form-group">
+            <label for="username">User Name</label>
+            <input
+              type="text"
+              id="username"
+              [(ngModel)]="username"
+              placeholder="Your Name"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              [(ngModel)]="email"
+              placeholder="name@company.com"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone/Email of System</label>
+            <input
+              id="phone"
+              type="text"
+              [(ngModel)]="phone"
+              placeholder="Phone/Email of System"
+              class="form-input"
+            />
+          </div>
+
+          <button
+            (click)="onSendOtp()"
+            [disabled]="!canSubmitInit() || isLoading()"
+            class="btn-primary"
+          >
+            @if (isLoading()) {
+              <span class="loading-spinner"></span>
+            } @else {
+              Authorize Device
+            }
+          </button>
+        </div>
+      }
+
+      <!-- Step 2: OTP -->
+      @if (step() === 'otp') {
+        <div class="form-content animate-slide-in">
+          <div class="form-header">
+            <h2>Verify Your Code</h2>
+            <p>Enter the 6-digit verification code we sent to you</p>
+          </div>
+
+          <div class="form-group">
+            <label for="otp">Verification Code</label>
+            <input
+              type="text"
+              id="otp"
+              maxlength="6"
+              [(ngModel)]="otp"
+              placeholder="000 000"
+              class="form-input form-input--otp"
+            />
+          </div>
+
+          <button
+            (click)="onVerifyOtp()"
+            [disabled]="otp().length !== 6 || isLoading()"
+            class="btn-primary"
+          >
+            @if (isLoading()) {
+              <span class="loading-spinner"></span>
+            } @else {
+              Verify & Complete
+            }
+          </button>
+
+          <button (click)="step.set('init')" class="btn-secondary">
+            Try a different method
+          </button>
+        </div>
+      }
+
+      <!-- Device Identity Footer -->
+      <!-- <div class="device-footer">
+        <div class="device-status">
+          <div class="status-dot"></div>
+          <span>Device Identity Active</span>
+        </div>
+        <div class="device-id">ID: {{ clientDeviceId() }}</div>
+      </div> -->
+    </div>
+  </section>
+</div>
