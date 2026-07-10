@@ -1,0 +1,225 @@
+<div class="modal-backdrop" (click)="close.emit()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="header-meta">
+        <h3 class="modal-title">
+          {{ page() ? 'Edit Page Configuration' : 'Create New Page' }}
+        </h3>
+        <p class="modal-subtitle">Configure search engine sitemaps, navigation paths, and publication states</p>
+      </div>
+      <button class="btn-close" (click)="close.emit()" title="Close dialog">
+        <av-svg-icon name="x" [size]="16"></av-svg-icon>
+      </button>
+    </div>
+
+    <!-- Modal Body: Forms -->
+    <form (submit)="onSubmit(); $event.preventDefault()" class="modal-form">
+      <div class="modal-body">
+        
+        <!-- Row 1: Page Name & Slug -->
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label" for="pageName">Page Name *</label>
+            <input
+              type="text"
+              id="pageName"
+              name="pageName"
+              class="form-control"
+              [(ngModel)]="pageName"
+              placeholder="e.g. About Us"
+              required
+            />
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label" for="slug">URL Slug *</label>
+            <input
+              type="text"
+              id="slug"
+              name="slug"
+              class="form-control"
+              [(ngModel)]="slug"
+              placeholder="e.g. about-us"
+              [disabled]="page()?.slug === 'home'"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Row 2: Nav Label & Settings -->
+        <div class="form-row">
+          <div class="form-group flex-1">
+            <label class="form-label" for="navLabel">Navigation Menu Label</label>
+            <input
+              type="text"
+              id="navLabel"
+              name="navLabel"
+              class="form-control"
+              [(ngModel)]="navLabel"
+              placeholder="e.g. About"
+            />
+          </div>
+          <div class="form-group flex-row-checkboxes">
+            <label class="checkbox-container">
+              <input type="checkbox" name="isInNavHeader" [(ngModel)]="isInNavHeader" />
+              <span class="checkbox-label">Show in Header Menu</span>
+            </label>
+            <label class="checkbox-container">
+              <input type="checkbox" name="isInNavFooter" [(ngModel)]="isInNavFooter" />
+              <span class="checkbox-label">Show in Footer Menu</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Section: SEO Sitemap Configuration -->
+        <div class="form-section">
+          <h4 class="section-title">SEO & Sitemap Configuration</h4>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label" for="sitemapPriority">Sitemap Priority</label>
+              <select id="sitemapPriority" name="sitemapPriority" class="form-control" [(ngModel)]="sitemapPriority">
+                <option value="1.0">1.0 (Highest)</option>
+                <option value="0.9">0.9</option>
+                <option value="0.8">0.8 (Default)</option>
+                <option value="0.7">0.7</option>
+                <option value="0.6">0.6</option>
+                <option value="0.5">0.5</option>
+                <option value="0.4">0.4</option>
+                <option value="0.3">0.3</option>
+                <option value="0.2">0.2</option>
+                <option value="0.1">0.1 (Lowest)</option>
+              </select>
+            </div>
+            <div class="form-group flex-1">
+              <label class="form-label" for="sitemapChangeFreq">Change Frequency</label>
+              <select id="sitemapChangeFreq" name="sitemapChangeFreq" class="form-control" [(ngModel)]="sitemapChangeFreq">
+                <option value="1">Always</option>
+                <option value="2">Hourly</option>
+                <option value="3">Daily</option>
+                <option value="4">Weekly</option>
+                <option value="5">Monthly (Default)</option>
+                <option value="6">Yearly</option>
+                <option value="7">Never</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="checkbox-container">
+              <input type="checkbox" name="sitemapInclude" [(ngModel)]="sitemapInclude" />
+              <span class="checkbox-label">Include this page in sitemap.xml</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Section: SEO Metadata -->
+        <div class="form-section">
+          <h4 class="section-title">
+            {{ isTemplateCompany() ? 'Default SEO Meta Tags (Template Defaults)' : 'SEO Meta Tags' }}
+          </h4>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label" for="metaTitle">SEO Meta Title</label>
+              <input
+                type="text"
+                id="metaTitle"
+                name="metaTitle"
+                class="form-control"
+                [(ngModel)]="metaTitle"
+                placeholder="e.g. Alien Universe - Home"
+              />
+            </div>
+            <div class="form-group flex-1">
+              <label class="form-label" for="keywords">Keywords (Comma Separated)</label>
+              <input
+                type="text"
+                id="keywords"
+                name="keywords"
+                class="form-control"
+                [(ngModel)]="keywords"
+                placeholder="e.g. gaming, space, meta"
+              />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label" for="metaDescription">Meta Description</label>
+              <textarea
+                id="metaDescription"
+                name="metaDescription"
+                class="form-control textarea"
+                [(ngModel)]="metaDescription"
+                placeholder="Describe your page context for search engine result snippets..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Tracking & Integration Scripts -->
+        <div class="form-section">
+          <h4 class="section-title">
+            {{ isTemplateCompany() ? 'Default Tracking & Integration Scripts (Template Defaults)' : 'Tracking & Integration Scripts' }}
+          </h4>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label" for="customHeaderScript">
+                Custom Header HTML / Script (inside &lt;head&gt;)
+              </label>
+              <textarea
+                id="customHeaderScript"
+                name="customHeaderScript"
+                class="form-control code-textarea"
+                [(ngModel)]="customHeaderScript"
+                placeholder="e.g. <!-- Google Tag Manager --> ..."
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label" for="customBodyScript">
+                Custom Body HTML / Script (immediately after &lt;body&gt;)
+              </label>
+              <textarea
+                id="customBodyScript"
+                name="customBodyScript"
+                class="form-control code-textarea"
+                [(ngModel)]="customBodyScript"
+                placeholder="e.g. <!-- Google Tag Manager (noscript) --> ..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Publishing Status -->
+        <div class="form-section">
+          <h4 class="section-title">Publication Settings</h4>
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label" for="pageStatus">Publication State</label>
+              <select id="pageStatus" name="pageStatus" class="form-control" [(ngModel)]="pageStatus">
+                <option value="1">Draft</option>
+                <option value="2">Published</option>
+                <option value="3">Scheduled</option>
+                <option value="4">Archived</option>
+              </select>
+            </div>
+            <div class="form-group flex-row-checkboxes flex-1 align-bottom-checkbox">
+              <label class="checkbox-container">
+                <input type="checkbox" name="active" [(ngModel)]="active" />
+                <span class="checkbox-label">Active / Live</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" (click)="close.emit()">Cancel</button>
+        <button type="submit" class="btn-save">
+          {{ page() ? 'Save Configuration' : 'Create Page' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

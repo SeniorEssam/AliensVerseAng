@@ -14,18 +14,38 @@ export class ApiService {
   //private readonly baseUrl = 'https://aliensverses.runasp.net/api/v1';
 
   get<T>(path: string): Observable<ResponseAPI<T>> {
-    return this.http.get<ResponseAPI<T>>(`${this.baseUrl}/${path}`, { withCredentials: true });
+    return this.http.get<ResponseAPI<T>>(`${this.baseUrl}/${path}`, {
+      withCredentials: true,
+    });
   }
 
   post<T>(path: string, body: any): Observable<ResponseAPI<T>> {
-    return this.http.post<ResponseAPI<T>>(`${this.baseUrl}/${path}`, body, { withCredentials: true });
+    return this.http.post<ResponseAPI<T>>(`${this.baseUrl}/${path}`, body, {
+      withCredentials: true,
+    });
   }
 
   put<T>(path: string, body: any): Observable<ResponseAPI<T>> {
-    return this.http.put<ResponseAPI<T>>(`${this.baseUrl}/${path}`, body, { withCredentials: true });
+    return this.http.put<ResponseAPI<T>>(`${this.baseUrl}/${path}`, body, {
+      withCredentials: true,
+    });
   }
 
   delete<T>(path: string): Observable<ResponseAPI<T>> {
-    return this.http.delete<ResponseAPI<T>>(`${this.baseUrl}/${path}`, { withCredentials: true });
+    return this.http.delete<ResponseAPI<T>>(`${this.baseUrl}/${path}`, {
+      withCredentials: true,
+    });
+  }
+
+  patch<T>(path: string, body: any): Observable<ResponseAPI<T>> {
+    return this.http.patch<ResponseAPI<T>>(`${this.baseUrl}/${path}`, body, {
+      withCredentials: true,
+    });
+  }
+
+  postForm<T>(path: string, formData: FormData): Observable<ResponseAPI<T>> {
+    return this.http.post<ResponseAPI<T>>(`${this.baseUrl}/${path}`, formData, {
+      withCredentials: true,
+    });
   }
 }

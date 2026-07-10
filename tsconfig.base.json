@@ -26,7 +26,8 @@
       "@aliens-verse/cookies": ["libs/utils/cookies/src/index.ts"],
       "@aliens-verse/landing-page": ["libs/plugins/landing-page/src/index.ts"],
       "@aliens-verse/auth-plugin": ["libs/plugins/auth-plugin/src/index.ts"],
-      "@aliens-verse/shell": ["libs/shell/src/index.ts"]
+      "@aliens-verse/shell": ["libs/shell/src/index.ts"],
+      "@aliens-verse/website-builder": ["libs/plugins/website-builder/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

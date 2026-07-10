@@ -3,7 +3,7 @@ import { tenantConfig } from '../config/tenant.config';
 import { TenantMode } from '../models/tenant.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TenantResolverService {
   private _mode = signal<TenantMode>(tenantConfig.mode);
@@ -23,7 +23,9 @@ export class TenantResolverService {
 
   private validateConfiguration(): void {
     if (this._mode() === 'multi' && !tenantConfig.defaultCompanySlug) {
-      throw new Error('defaultCompanySlug must be configured in multi tenant mode');
+      throw new Error(
+        'defaultCompanySlug must be configured in multi tenant mode',
+      );
     }
   }
 
@@ -60,6 +62,8 @@ export class TenantResolverService {
   }
 
   private generateToken(): string {
-    return Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    return (
+      Math.random().toString(36).substring(2, 15) + Date.now().toString(36)
+    );
   }
 }

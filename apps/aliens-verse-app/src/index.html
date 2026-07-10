@@ -6,6 +6,26 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <script>
+      (function () {
+        const defaultText = 'AliensVerse';
+        const query = new URLSearchParams(window.location.search);
+        const slugFromQuery =
+          query.get('company') ||
+          query.get('company_slug') ||
+          query.get('slug') ||
+          query.get('c');
+        const pathSegments = window.location.pathname
+          .split('/')
+          .filter(Boolean);
+        const slug = slugFromQuery || pathSegments[0] || defaultText;
+        const sanitized =
+          slug && slug !== defaultText
+            ? slug.replace(/[^a-zA-Z0-9-_]/g, '')
+            : defaultText;
+        window.__AV_INITIAL_TEXT__ = sanitized;
+      })();
+    </script>
     <style>
       body {
         margin: 0;
@@ -22,7 +42,11 @@
         justify-content: center;
         background: #ffffff;
         color: #0f0e1a;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        font-family:
+          'Inter',
+          system-ui,
+          -apple-system,
+          sans-serif;
       }
       .global-spinner {
         width: 50px;
@@ -44,11 +68,18 @@
         animation: global-pulse 2s infinite;
       }
       @keyframes global-spin {
-        to { transform: rotate(360deg); }
+        to {
+          transform: rotate(360deg);
+        }
       }
       @keyframes global-pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.5; }
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
       }
     </style>
   </head>
@@ -59,5 +90,11 @@
         <h2 class="global-text">AliensVerse</h2>
       </div>
     </av-root>
+    <script>
+      var textElement = document.querySelector('.global-text');
+      if (textElement && window.__AV_INITIAL_TEXT__) {
+        textElement.textContent = window.__AV_INITIAL_TEXT__;
+      }
+    </script>
   </body>
 </html>

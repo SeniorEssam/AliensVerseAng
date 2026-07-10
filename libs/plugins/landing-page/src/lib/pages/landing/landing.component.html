@@ -1,13 +1,21 @@
-<div class="landing-root" [class.dark]="isDark()" [class.is-custom-page]="hasApiHeader()">
+<div
+  class="landing-root"
+  [class.dark]="isDark()"
+  [class.is-custom-page]="hasApiHeader()"
+>
   <av-consent-banner></av-consent-banner>
 
   @if (isLoading()) {
     <div class="splash-screen-overlay">
       <div class="splash-spinner"></div>
-      <h2 class="splash-text">AliensVerse</h2>
+      <h2 class="splash-text">{{ splashTitle() }}</h2>
     </div>
   } @else {
-    <canvas #starCanvas class="star-canvas" [style.display]="hasApiHeader() ? 'none' : 'block'"></canvas>
+    <canvas
+      #starCanvas
+      class="star-canvas"
+      [style.display]="hasApiHeader() ? 'none' : 'block'"
+    ></canvas>
 
     @if (!hasApiHeader()) {
       <nav class="navbar" [class.scrolled]="isScrolled()">

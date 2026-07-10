@@ -1,0 +1,448 @@
+<div class="panel-container">
+  <!-- Panel Header -->
+  <div class="panel-header">
+    <div class="header-meta">
+      <span class="panel-title">Properties</span>
+      <span class="layout-badge">{{ section().layoutName }}</span>
+    </div>
+    <button class="btn-change-layout" (click)="changeLayout.emit()">
+      <av-svg-icon name="layout" [size]="12"></av-svg-icon>
+      <span>Layout Template</span>
+    </button>
+  </div>
+
+  <!-- Settings Editor Form -->
+  <div class="panel-body">
+    @if (getSettingKeys().length === 0) {
+      <div class="empty-properties">No editable settings for this layout.</div>
+    } @else {
+      <div class="form-groups">
+        @for (key of getSettingKeys(); track key) {
+          <div class="form-group">
+            <div class="form-group-header">
+              <div class="setting-label-row">
+                <label [for]="key" class="field-label">{{ formatLabel(getSettingKeyName(key)) }}</label>
+                @if (getSettingLanguageId(key)) {
+                  <span class="setting-lang-badge">{{ getLanguageName(getSettingLanguageId(key)) }}</span>
+                }
+              </div>
+              @if (isTemplateCompany() && !key.endsWith('_json')) {
+                <button type="button" class="btn-delete-setting-key" (click)="deleteSettingKey(key)" title="Delete Setting">
+                  <av-svg-icon name="trash" [size]="10"></av-svg-icon>
+                </button>
+              }
+            </div>
+
+            <!-- Image field type -->
+            @if (key.endsWith('_json')) {
+              
+              <!-- SLIDES LIST EDITOR -->
+              @if (key === 'slides_json') {
+                <div class="list-editor-container">
+                  <div class="list-editor-header">
+                    <span class="list-editor-title">Manage Slider Items</span>
+                    @if (isTemplateCompany()) {
+                      <button type="button" class="btn-add-item" (click)="addItem(key)" title="Add Slide">
+                        <av-svg-icon name="plus" [size]="12"></av-svg-icon>
+                        <span>Add Slide</span>
+                      </button>
+                    }
+                  </div>
+                  <div class="list-items">
+                    @for (slide of parseJsonList(key, settingsModel[key]); track slide.id; let idx = $index) {
+                      <div class="item-card">
+                        <div class="item-card-header">
+                          <span class="item-index">Slide #{{ idx + 1 }}</span>
+                          <div class="item-header-actions">
+                            <button type="button" class="action-btn sort-btn" (click)="moveItemUp(key, idx)" [disabled]="idx === 0">
+                              <av-svg-icon name="arrow-up" [size]="10"></av-svg-icon>
+                            </button>
+                            <button type="button" class="action-btn sort-btn" (click)="moveItemDown(key, idx)" [disabled]="idx === parseJsonList(key, settingsModel[key]).length - 1">
+                              <av-svg-icon name="arrow-down" [size]="10"></av-svg-icon>
+                            </button>
+                            @if (isTemplateCompany()) {
+                              <button type="button" class="action-btn delete-btn" (click)="deleteItem(key, idx)" title="Delete Slide">
+                                <av-svg-icon name="trash" [size]="10"></av-svg-icon>
+                              </button>
+                            }
+                          </div>
+                        </div>
+                        <div class="item-card-body">
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Slide Title</label>
+                            <input type="text" [(ngModel)]="slide.title" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Subtitle</label>
+                            <input type="text" [(ngModel)]="slide.subTitle" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Description</label>
+                            <textarea [(ngModel)]="slide.description" (ngModelChange)="saveJsonList(key)" class="sub-field-textarea"></textarea>
+                          </div>
+                          <div class="sub-form-row">
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Btn Text</label>
+                              <input type="text" [(ngModel)]="slide.buttonText" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                            </div>
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Btn URL</label>
+                              <input type="text" [(ngModel)]="slide.buttonUrl" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- PRICING PLANS LIST EDITOR -->
+              @if (key === 'pricing_plans_json') {
+                <div class="list-editor-container">
+                  <div class="list-editor-header">
+                    <span class="list-editor-title">Manage Pricing Plans</span>
+                    @if (isTemplateCompany()) {
+                      <button type="button" class="btn-add-item" (click)="addItem(key)" title="Add Plan">
+                        <av-svg-icon name="plus" [size]="12"></av-svg-icon>
+                        <span>Add Plan</span>
+                      </button>
+                    }
+                  </div>
+                  <div class="list-items">
+                    @for (plan of parseJsonList(key, settingsModel[key]); track plan.id; let idx = $index) {
+                      <div class="item-card">
+                        <div class="item-card-header">
+                          <span class="item-index">Plan #{{ idx + 1 }}</span>
+                          <div class="item-header-actions">
+                            <button type="button" class="action-btn sort-btn" (click)="moveItemUp(key, idx)" [disabled]="idx === 0">
+                              <av-svg-icon name="arrow-up" [size]="10"></av-svg-icon>
+                            </button>
+                            <button type="button" class="action-btn sort-btn" (click)="moveItemDown(key, idx)" [disabled]="idx === parseJsonList(key, settingsModel[key]).length - 1">
+                              <av-svg-icon name="arrow-down" [size]="10"></av-svg-icon>
+                            </button>
+                            @if (isTemplateCompany()) {
+                              <button type="button" class="action-btn delete-btn" (click)="deleteItem(key, idx)" title="Delete Plan">
+                                <av-svg-icon name="trash" [size]="10"></av-svg-icon>
+                              </button>
+                            }
+                          </div>
+                        </div>
+                        <div class="item-card-body">
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Plan Name</label>
+                            <input type="text" [(ngModel)]="plan.planName" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                          </div>
+                          <div class="sub-form-row">
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Badge</label>
+                              <input type="text" [(ngModel)]="plan.badge" (ngModelChange)="saveJsonList(key)" class="sub-field-input" placeholder="e.g. Popular">
+                            </div>
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Price</label>
+                              <input type="text" [(ngModel)]="plan.price" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                            </div>
+                          </div>
+                          <div class="sub-form-row">
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Period</label>
+                              <input type="text" [(ngModel)]="plan.period" (ngModelChange)="saveJsonList(key)" class="sub-field-input" placeholder="e.g. month">
+                            </div>
+                            <div class="sub-form-group flex-1 align-bottom-check">
+                              <label class="sub-checkbox-container">
+                                <input type="checkbox" [(ngModel)]="plan.isFeatured" (change)="saveJsonList(key)">
+                                <span class="sub-checkbox-label">Featured / Highlighted</span>
+                              </label>
+                            </div>
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Description</label>
+                            <textarea [(ngModel)]="plan.description" (ngModelChange)="saveJsonList(key)" class="sub-field-textarea"></textarea>
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Button Text</label>
+                            <input type="text" [(ngModel)]="plan.buttonText" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                          </div>
+                          
+                          <!-- Plan Features Sub-list -->
+                          <div class="nested-list-section">
+                            <div class="nested-header">
+                              <span class="nested-title">Plan Benefits / Features</span>
+                              <button type="button" class="btn-add-nested" (click)="addFeature(plan)">
+                                <av-svg-icon name="plus" [size]="10"></av-svg-icon>
+                                <span>Add Benefit</span>
+                              </button>
+                            </div>
+                            <div class="nested-items">
+                              @for (feat of plan.features; track feat.id; let fIdx = $index) {
+                                <div class="nested-item-row">
+                                  <input type="checkbox" [(ngModel)]="feat.isIncluded" (change)="saveJsonList(key)">
+                                  <input type="text" [(ngModel)]="feat.featureText" (ngModelChange)="saveJsonList(key)" class="nested-input" placeholder="Benefit details...">
+                                  <button type="button" class="btn-remove-nested" (click)="deleteFeature(plan, fIdx)">
+                                    <av-svg-icon name="x" [size]="10"></av-svg-icon>
+                                  </button>
+                                </div>
+                              }
+                            </div>
+                          </div>
+
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- TESTIMONIALS LIST EDITOR -->
+              @if (key === 'testimonials_json') {
+                <div class="list-editor-container">
+                  <div class="list-editor-header">
+                    <span class="list-editor-title">Manage Testimonials</span>
+                    @if (isTemplateCompany()) {
+                      <button type="button" class="btn-add-item" (click)="addItem(key)" title="Add Testimonial">
+                        <av-svg-icon name="plus" [size]="12"></av-svg-icon>
+                        <span>Add Testimonial</span>
+                      </button>
+                    }
+                  </div>
+                  <div class="list-items">
+                    @for (test of parseJsonList(key, settingsModel[key]); track test.id; let idx = $index) {
+                      <div class="item-card">
+                        <div class="item-card-header">
+                          <span class="item-index">Feedback #{{ idx + 1 }}</span>
+                          <div class="item-header-actions">
+                            <button type="button" class="action-btn sort-btn" (click)="moveItemUp(key, idx)" [disabled]="idx === 0">
+                              <av-svg-icon name="arrow-up" [size]="10"></av-svg-icon>
+                            </button>
+                            <button type="button" class="action-btn sort-btn" (click)="moveItemDown(key, idx)" [disabled]="idx === parseJsonList(key, settingsModel[key]).length - 1">
+                              <av-svg-icon name="arrow-down" [size]="10"></av-svg-icon>
+                            </button>
+                            @if (isTemplateCompany()) {
+                              <button type="button" class="action-btn delete-btn" (click)="deleteItem(key, idx)" title="Delete Testimonial">
+                                <av-svg-icon name="trash" [size]="10"></av-svg-icon>
+                              </button>
+                            }
+                          </div>
+                        </div>
+                        <div class="item-card-body">
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Client Name</label>
+                            <input type="text" [(ngModel)]="test.clientName" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                          </div>
+                          <div class="sub-form-row">
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Position</label>
+                              <input type="text" [(ngModel)]="test.clientPosition" (ngModelChange)="saveJsonList(key)" class="sub-field-input" placeholder="e.g. Director">
+                            </div>
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Company</label>
+                              <input type="text" [(ngModel)]="test.clientCompany" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                            </div>
+                          </div>
+                          <div class="sub-form-row">
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Rating (1 to 5 Stars)</label>
+                              <select [(ngModel)]="test.rating" (change)="saveJsonList(key)" class="sub-field-input">
+                                <option [value]="5">5 Stars</option>
+                                <option [value]="4">4 Stars</option>
+                                <option [value]="3">3 Stars</option>
+                                <option [value]="2">2 Stars</option>
+                                <option [value]="1">1 Star</option>
+                              </select>
+                            </div>
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Client Photo</label>
+                              <div class="sub-image-uploader">
+                                <label class="btn-upload-small">
+                                  @if (uploadingItemKey() === (key + '-' + test.id + '-imageUrl')) {
+                                    <div class="mini-spinner"></div>
+                                    <span>...</span>
+                                  } @else {
+                                    <av-svg-icon name="upload" [size]="10"></av-svg-icon>
+                                    <span>Upload</span>
+                                  }
+                                  <input type="file" accept="image/*" class="hidden-file-input" (change)="onItemFileSelected(key, test, 'imageUrl', $event)">
+                                </label>
+                                @if (test.imageUrl) {
+                                  <img [src]="test.imageUrl" class="sub-img-preview" alt="Client logo">
+                                }
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- SERVICES LIST EDITOR -->
+              @if (key === 'services_json') {
+                <div class="list-editor-container">
+                  <div class="list-editor-header">
+                    <span class="list-editor-title">Manage Services</span>
+                    @if (isTemplateCompany()) {
+                      <button type="button" class="btn-add-item" (click)="addItem(key)" title="Add Service">
+                        <av-svg-icon name="plus" [size]="12"></av-svg-icon>
+                        <span>Add Service</span>
+                      </button>
+                    }
+                  </div>
+                  <div class="list-items">
+                    @for (svc of parseJsonList(key, settingsModel[key]); track svc.id; let idx = $index) {
+                      <div class="item-card">
+                        <div class="item-card-header">
+                          <span class="item-index">Service #{{ idx + 1 }}</span>
+                          <div class="item-header-actions">
+                            <button type="button" class="action-btn sort-btn" (click)="moveItemUp(key, idx)" [disabled]="idx === 0">
+                              <av-svg-icon name="arrow-up" [size]="10"></av-svg-icon>
+                            </button>
+                            <button type="button" class="action-btn sort-btn" (click)="moveItemDown(key, idx)" [disabled]="idx === parseJsonList(key, settingsModel[key]).length - 1">
+                              <av-svg-icon name="arrow-down" [size]="10"></av-svg-icon>
+                            </button>
+                            @if (isTemplateCompany()) {
+                              <button type="button" class="action-btn delete-btn" (click)="deleteItem(key, idx)" title="Delete Service">
+                                <av-svg-icon name="trash" [size]="10"></av-svg-icon>
+                              </button>
+                            }
+                          </div>
+                        </div>
+                        <div class="item-card-body">
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Service Key / Icon ID</label>
+                            <input type="text" [(ngModel)]="svc.serviceName" (ngModelChange)="saveJsonList(key)" class="sub-field-input" placeholder="e.g. game-design">
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Title</label>
+                            <input type="text" [(ngModel)]="svc.title" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Short Description</label>
+                            <textarea [(ngModel)]="svc.shortDescription" (ngModelChange)="saveJsonList(key)" class="sub-field-textarea"></textarea>
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Service Banner Image</label>
+                            <div class="sub-image-uploader">
+                              <label class="btn-upload-small">
+                                @if (uploadingItemKey() === (key + '-' + svc.id + '-imageUrl')) {
+                                  <div class="mini-spinner"></div>
+                                  <span>...</span>
+                                } @else {
+                                  <av-svg-icon name="upload" [size]="10"></av-svg-icon>
+                                  <span>Upload</span>
+                                }
+                                <input type="file" accept="image/*" class="hidden-file-input" (change)="onItemFileSelected(key, svc, 'imageUrl', $event)">
+                              </label>
+                              @if (svc.imageUrl) {
+                                <img [src]="svc.imageUrl" class="sub-img-preview" alt="Service banner">
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+            } @else if (isImageField(key)) {
+              <div class="image-uploader">
+                @if (settingsModel[key]) {
+                  <div class="image-preview-container">
+                    <img [src]="settingsModel[key]" alt="Field preview" class="field-image-preview">
+                    <button class="btn-remove-image" (click)="settingsModel[key] = ''" title="Remove Image">
+                      <av-svg-icon name="x" [size]="12"></av-svg-icon>
+                    </button>
+                  </div>
+                }
+
+                <div class="upload-trigger">
+                  <label class="btn-upload">
+                    @if (uploadingKey() === key) {
+                      <div class="mini-spinner"></div>
+                      <span>Uploading...</span>
+                    } @else {
+                      <av-svg-icon name="upload" [size]="12"></av-svg-icon>
+                      <span>Choose file</span>
+                    }
+                    <input
+                      type="file"
+                      [id]="key"
+                      accept="image/*"
+                      class="hidden-file-input"
+                      (change)="onFileSelected(key, $event)"
+                      [disabled]="uploadingKey() === key"
+                    >
+                  </label>
+                </div>
+              </div>
+            } @else {
+              <!-- Standard Text field type -->
+              <input
+                type="text"
+                [id]="key"
+                [(ngModel)]="settingsModel[key]"
+                class="field-input"
+                [placeholder]="formatLabel(key)"
+              >
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (isTemplateCompany()) {
+      <div class="custom-setting-action-row">
+        <button type="button" class="btn-add-setting" (click)="openAddSettingModal()">
+          <av-svg-icon name="plus" [size]="12"></av-svg-icon>
+          <span>Add Custom Setting</span>
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Panel Footer Actions -->
+  <div class="panel-footer">
+    <button class="btn-save" (click)="onSave()">
+      <av-svg-icon name="check" [size]="12"></av-svg-icon>
+      <span>Apply Settings</span>
+    </button>
+  </div>
+
+  <!-- Custom Setting Popup Modal -->
+  @if (isAddSettingModalOpen()) {
+    <div class="setting-modal-overlay">
+      <div class="setting-modal-card">
+        <div class="setting-modal-header">
+          <span class="setting-modal-title">Add Custom Setting</span>
+          <button type="button" class="btn-close-setting-modal" (click)="closeAddSettingModal()">
+            <av-svg-icon name="x" [size]="12"></av-svg-icon>
+          </button>
+        </div>
+        <div class="setting-modal-body">
+          <div class="sub-form-group">
+            <label class="sub-field-label">Setting Key</label>
+            <input type="text" [(ngModel)]="newSettingKey" class="sub-field-input" placeholder="e.g. subtitle, phone_number">
+          </div>
+          <div class="sub-form-group">
+            <label class="sub-field-label">Setting Value</label>
+            <input type="text" [(ngModel)]="newSettingValue" class="sub-field-input" placeholder="Enter setting value...">
+          </div>
+          <div class="sub-form-group">
+            <label class="sub-field-label">Language</label>
+            <select [(ngModel)]="newSettingLanguageId" class="sub-field-input select-input">
+              <option value="" disabled>Select Language</option>
+              @for (lang of availableLanguages(); track lang.id) {
+                <option [value]="lang.id">{{ lang.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="setting-modal-footer">
+          <button type="button" class="btn-cancel-modal" (click)="closeAddSettingModal()">Cancel</button>
+          <button type="button" class="btn-submit-modal" (click)="confirmAddSetting()">Add Setting</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

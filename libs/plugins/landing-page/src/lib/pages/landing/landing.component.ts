@@ -18,7 +18,11 @@ import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Title, Meta } from '@angular/platform-browser';
 import { ThemeService } from '@aliens-verse/ui';
-import { PublicContextService, TenantResolverService, GlobalComponentRegistryService } from '@aliens-verse/api-sdk';
+import {
+  PublicContextService,
+  TenantResolverService,
+  GlobalComponentRegistryService,
+} from '@aliens-verse/api-sdk';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { map, distinctUntilChanged } from 'rxjs';
 import { PageRendererComponent } from '../../components/page-renderer/page-renderer.component';
@@ -73,6 +77,18 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     ),
   );
 
+  readonly splashTitle = computed(() => {
+    const info = this.companyInfo();
+    if (info?.company_slug) {
+      return info.company_slug;
+    }
+    const slug = this.tenantResolver.companySlug();
+    if (slug) {
+      return this.formatSlug(slug);
+    }
+    return 'AliensVerse';
+  });
+
   readonly isLanguageSwitcherVisible = computed(
     () => this.languages().length > 1,
   );
@@ -83,16 +99,20 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     return visible.some(
       (section) =>
         section.type?.toLowerCase() === 'header' ||
-        section.category?.toLowerCase() === 'header'
+        section.category?.toLowerCase() === 'header',
     );
   });
 
   readonly pageSlug = signal('');
-  readonly isFetchingSections = computed(() => this.publicCtx.loadingSections());
+  readonly isFetchingSections = computed(() =>
+    this.publicCtx.loadingSections(),
+  );
   readonly allComponentsLoaded = signal(false);
-  
-  readonly isLoading = computed(() => 
-    this.isFetchingSections() || (this.sections().length > 0 && !this.allComponentsLoaded())
+
+  readonly isLoading = computed(
+    () =>
+      this.isFetchingSections() ||
+      (this.sections().length > 0 && !this.allComponentsLoaded()),
   );
 
   isScrolled = signal(false);
@@ -119,7 +139,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
       this.allComponentsLoaded.set(true);
       return;
     }
-    
+
     const promises = sections.map(async (section) => {
       const identifier = section.component || section.layout;
       if (!identifier) return;
@@ -138,7 +158,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     await Promise.all(promises);
-    
+
     // Slight delay to ensure DOM updates and no flashes
     setTimeout(() => {
       this.allComponentsLoaded.set(true);
@@ -153,11 +173,11 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.route.paramMap
       .pipe(
-        map(params => params.get('pageSlug') || 'home'),
+        map((params) => params.get('pageSlug') || 'home'),
         distinctUntilChanged(),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
-      .subscribe(pageSlug => {
+      .subscribe((pageSlug) => {
         this.pageSlug.set(pageSlug);
         this.publicCtx.fetchSectionsForPage(pageSlug);
         this.updateTitleAndFavicon();
@@ -179,6 +199,11 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private resizeHandler = () => this.resizeCanvas();
+
+  private formatSlug(slug: string): string {
+    if (!slug) return 'AliensVerse';
+    return slug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+  }
 
   private updateTitleAndFavicon() {
     const name = this.companyInfo()?.company_name || 'AliensVerse';
@@ -292,7 +317,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.ctx || !this.canvasRef) return;
     const canvas = this.canvasRef.nativeElement;
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     // Only animate if the canvas is actually visible to save CPU
     if (canvas.style.display !== 'none') {
       const isDark = this.themeService.currentTheme() === 'dark';
@@ -312,5 +337,3 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.animationId = requestAnimationFrame(() => this.animate());
   }
 }
-
-

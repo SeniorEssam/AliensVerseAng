@@ -31,4 +31,9 @@ export interface PluginManifest {
    * Any specific permissions required by this plugin to be activated.
    */
   permissions?: string[];
+
+  /**
+   * Feature flag controlled dynamically to toggle visibility.
+   */
+  featureFlag?: string;
 }

@@ -1,0 +1,81 @@
+<div class="layers-container">
+  <div class="layers-header">
+    <av-svg-icon name="menu" [size]="14"></av-svg-icon>
+    <span class="header-title">Page Sections</span>
+  </div>
+
+  <div class="layers-list">
+    @if (sections().length === 0) {
+      <div class="empty-list">No sections on page.</div>
+    } @else {
+      @for (sec of sections(); track sec.companySectionId; let idx = $index) {
+        <div
+          class="layer-item"
+          [class.active]="selectedId() === sec.companySectionId"
+          [class.hidden-layer]="!sec.isVisible"
+          (click)="select.emit(sec.companySectionId)"
+        >
+          <!-- Category Indicator Icon -->
+          <div class="layer-meta">
+            <av-svg-icon name="layout" class="type-icon" [size]="14"></av-svg-icon>
+            <div class="layer-info">
+              <span class="layer-name">{{ sec.typeName }}</span>
+              <span class="layout-name">{{ sec.layoutName }}</span>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="layer-actions">
+            <!-- Sort Up -->
+            <button
+              class="action-btn sort-btn"
+              [disabled]="idx === 0"
+              (click)="moveUp(idx, $event)"
+              title="Move Up"
+            >
+              ▲
+            </button>
+
+            <!-- Sort Down -->
+            <button
+              class="action-btn sort-btn"
+              [disabled]="idx === sections().length - 1"
+              (click)="moveDown(idx, $event)"
+              title="Move Down"
+            >
+              ▼
+            </button>
+
+            <!-- Visibility Toggle -->
+            <button
+              class="action-btn visible-btn"
+              (click)="toggleVisible(sec, $event)"
+              [title]="sec.isVisible ? 'Hide Section' : 'Show Section'"
+            >
+              <av-svg-icon
+                [name]="sec.isVisible ? 'eye' : 'eye-off'"
+                [size]="13"
+              ></av-svg-icon>
+            </button>
+
+            <!-- Delete Section -->
+            <button
+              class="action-btn delete-btn"
+              (click)="deleteSec(sec, $event)"
+              title="Delete Section"
+            >
+              <av-svg-icon name="trash" [size]="13"></av-svg-icon>
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="layers-footer">
+    <button class="btn-add-section" (click)="addSection.emit()">
+      <av-svg-icon name="plus" [size]="14"></av-svg-icon>
+      <span>Add Section</span>
+    </button>
+  </div>
+</div>

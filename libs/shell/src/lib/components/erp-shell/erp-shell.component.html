@@ -1,199 +1,197 @@
 <div
-  class="erp-container min-h-screen bg-zinc-50 dark:bg-zinc-950 flex transition-colors duration-500"
+  class="erp-root"
+  [class.sidebar-collapsed]="sidebarCollapsed()"
+  [attr.data-theme]="isDark() ? 'dark' : 'light'"
 >
-  <!-- Sidebar -->
-  <aside
-    class="relative z-30 bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 transition-all duration-300 flex flex-col"
-    [class.w-72]="isSidebarOpen()"
-    [class.w-20]="!isSidebarOpen()"
-  >
-    <div class="px-6 py-6 flex items-center justify-between">
-      <div class="flex items-center gap-3 overflow-hidden">
-        <av-logo
-          [companyLogo]="companyInfo()?.company_logo"
-          [companyLogoDark]="companyInfo()?.company_logo_dark"
-          alt="{{ companyInfo()?.company_name || 'AliensVerse' }}"
-          className="h-10 w-10 min-w-[40px]"
-        ></av-logo>
 
-        <div class="min-w-0">
-          <p
-            class="text-sm font-semibold text-zinc-900 dark:text-white truncate"
-            [class.hidden]="!isSidebarOpen()"
-          >
-            {{ companyInfo()?.company_name || 'AliensVerse' }}
-          </p>
-          <p
-            class="text-xs text-zinc-500 dark:text-zinc-400 truncate"
-            [class.hidden]="!isSidebarOpen()"
-          >
-            {{ companyInfo()?.company_domain || 'Enterprise Platform' }}
-          </p>
+  <!-- ══════════════════════════════════════════════════════
+       SIDEBAR
+  ══════════════════════════════════════════════════════ -->
+  <aside class="erp-sidebar">
+
+    <!-- Logo + Company Info -->
+    <div class="sidebar-header">
+      <av-logo
+        [companyLogo]="companyInfo()?.company_logo"
+        [companyLogoDark]="companyInfo()?.company_logo_dark"
+        [alt]="companyInfo()?.company_name ?? 'AliensVerse'"
+        className="sidebar-logo"
+      />
+      @if (!sidebarCollapsed()) {
+        <div class="company-info">
+          <span class="company-name">{{ companyInfo()?.company_name ?? 'AliensVerse' }}</span>
+          <span class="company-domain">{{ companyInfo()?.company_domain ?? 'Enterprise Platform' }}</span>
         </div>
-      </div>
+      }
     </div>
 
     <!-- Navigation -->
-    <nav class="flex-grow px-4 space-y-2 py-4">
-      <a
-        routerLink="./dashboard"
-        routerLinkActive="active-link"
-        class="nav-item"
-      >
-        <span class="icon">📊</span>
-        <span class="label" [class.hidden]="!isSidebarOpen()">Dashboard</span>
-      </a>
-      <a routerLink="./reports" routerLinkActive="active-link" class="nav-item">
-        <span class="icon">📈</span>
-        <span class="label" [class.hidden]="!isSidebarOpen()">Analytics</span>
-      </a>
-      <a
-        routerLink="./settings"
-        routerLinkActive="active-link"
-        class="nav-item"
-      >
-        <span class="icon">⚙️</span>
-        <span class="label" [class.hidden]="!isSidebarOpen()">Settings</span>
-      </a>
+    <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
+      @for (item of navItems(); track item.route) {
+        <av-nav-item
+          [label]="item.label"
+          [icon]="item.icon"
+          [route]="item.route"
+          [collapsed]="sidebarCollapsed()"
+        />
+      }
     </nav>
 
-    <!-- Sidebar Footer -->
-    <div class="p-4 border-t border-zinc-200 dark:border-zinc-800">
-      <button
-        (click)="toggleTheme()"
-        class="w-full flex items-center p-3 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-      >
-        <span class="icon text-xl">{{
-          themeService.currentTheme() === 'dark' ? '🌙' : '☀️'
-        }}</span>
-        <span
-          class="label ml-3 text-sm font-medium text-zinc-600 dark:text-zinc-400"
-          [class.hidden]="!isSidebarOpen()"
-        >
-          {{
-            themeService.currentTheme() === 'dark' ? 'Dark Mode' : 'Light Mode'
-          }}
-        </span>
-      </button>
-    </div>
+    <!-- Spacer -->
+    <div class="sidebar-spacer"></div>
+
+    <!-- Collapse Toggle -->
+    <button
+      class="collapse-btn"
+      (click)="toggleSidebar()"
+      [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+      type="button"
+      aria-label="Toggle sidebar"
+    >
+      <av-svg-icon
+        [name]="sidebarCollapsed() ? 'chevron-right' : 'chevron-left'"
+        [size]="16"
+      />
+      @if (!sidebarCollapsed()) {
+        <span class="collapse-label">Collapse</span>
+      }
+    </button>
+
+    <!-- User Card -->
+    <av-user-card
+      [userName]="session()?.email ?? 'User'"
+      [storeName]="currentStoreName()"
+      [branchName]="currentBranchName()"
+      [collapsed]="sidebarCollapsed()"
+      (logout)="logout()"
+    />
+
   </aside>
 
-  <!-- Main Content Area -->
-  <div class="flex-grow flex flex-col min-w-0">
-    <!-- Topbar (simplified for focused workflows) -->
-    <header
-      class="h-16 bg-white/90 dark:bg-zinc-900/90 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-6 relative z-20"
-    >
-      <div class="flex items-center gap-4">
-        <button
-          (click)="toggleSidebar()"
-          aria-label="Toggle sidebar"
-          class="text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
-        >
-          <span class="text-2xl">☰</span>
-        </button>
+  <!-- ══════════════════════════════════════════════════════
+       MAIN AREA
+  ══════════════════════════════════════════════════════ -->
+  <div class="erp-main">
 
-        <div class="flex flex-col">
-          <div class="flex items-center space-x-2">
-            <span
-              class="text-sm font-bold text-purple-500 uppercase tracking-widest"
-              >{{ currentStoreName() }}</span
-            >
-            <span class="text-zinc-300">/</span>
-            <span
-              class="text-sm font-medium text-zinc-500 uppercase tracking-widest"
-              >{{ currentBranchName() }}</span
-            >
-          </div>
-          <div class="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
-            {{ currentLanguageName() }}
-          </div>
+    <!-- TOPBAR -->
+    <header class="erp-topbar" role="banner">
+
+      <!-- Left: Breadcrumb / context -->
+      <div class="topbar-left">
+        <div class="topbar-context">
+          <span class="ctx-store">{{ currentStoreName() }}</span>
+          <span class="ctx-sep">/</span>
+          <span class="ctx-branch">{{ currentBranchName() }}</span>
         </div>
       </div>
 
-      <div class="flex items-center space-x-3">
-        <!-- Focus Mode: reuse toggleSidebar to collapse UI for concentration -->
+      <!-- Right: Actions -->
+      <div class="topbar-right">
+
+        <!-- Theme toggle -->
         <button
-          (click)="toggleSidebar()"
-          title="Focus mode"
-          class="px-3 py-2 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
+          class="icon-btn"
+          (click)="toggleTheme()"
+          [title]="isDark() ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+          type="button"
+          aria-label="Toggle theme"
         >
-          🎯
+          <av-svg-icon [name]="isDark() ? 'sun' : 'moon'" [size]="18"/>
         </button>
 
-        <!-- Compact context switcher -->
-        <div class="relative">
+        <!-- Context Switcher -->
+        <div class="ctx-switcher" [class.open]="isContextOpen()">
           <button
-            (click)="toggleHamburger()"
-            class="px-3 py-2 rounded-md bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition"
+            class="ctx-trigger"
+            (click)="toggleContext()"
+            type="button"
+            aria-haspopup="listbox"
+            [attr.aria-expanded]="isContextOpen()"
           >
-            <span class="text-sm">{{ isHamburgerOpen() ? '▲' : '▼' }}</span>
+            <av-svg-icon name="user" [size]="16"/>
+            @if (!isContextOpen()) {
+              <av-svg-icon name="chevron-down" [size]="14"/>
+            } @else {
+              <av-svg-icon name="chevron-left" [size]="14"/>
+            }
           </button>
 
-          @if (isHamburgerOpen()) {
-            <div
-              class="absolute right-0 mt-2 w-64 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-xl overflow-hidden p-2"
-            >
-              <div
-                class="px-3 py-2 border-b border-zinc-100 dark:border-zinc-700 mb-2"
-              >
-                <h4
-                  class="text-xs font-bold text-zinc-400 uppercase tracking-widest"
-                >
-                  Switch Context
-                </h4>
+          @if (isContextOpen()) {
+            <!-- Backdrop -->
+            <div class="ctx-backdrop" (click)="closeContext()"></div>
+
+            <!-- Dropdown -->
+            <div class="ctx-dropdown" role="listbox" aria-label="Switch context">
+              <div class="ctx-dropdown-header">
+                <span class="ctx-user">{{ session()?.email }}</span>
+                <span class="ctx-lang">{{ currentLanguageName() }}</span>
               </div>
-              <div class="max-h-56 overflow-y-auto space-y-1">
+
+              <div class="ctx-divider"></div>
+
+              <div class="ctx-scroll">
                 @for (store of stores(); track store.id) {
-                  <div>
-                    <div
-                      class="px-3 py-1 text-xs font-bold text-purple-500 uppercase"
-                    >
-                      {{ store.name }}
-                    </div>
+                  <div class="ctx-store-group">
+                    <span class="ctx-store-label">{{ store.name }}</span>
                     @for (branch of branches(); track branch.id) {
                       <button
+                        class="ctx-item"
+                        [class.active]="session()?.branchId === branch.id && session()?.storeId === store.id"
                         (click)="switchContext(store.id, branch.id)"
-                        class="w-full text-left px-3 py-2 rounded text-sm transition flex items-center justify-between"
-                        [class.bg-purple-500]="
-                          session()?.branchId === branch.id
-                        "
-                        [class.text-white]="session()?.branchId === branch.id"
-                        [class.text-zinc-600]="
-                          session()?.branchId !== branch.id
-                        "
-                        [class.dark:text-zinc-400]="
-                          session()?.branchId !== branch.id
-                        "
+                        [disabled]="isChangingCtx()"
+                        role="option"
+                        type="button"
                       >
-                        {{ branch.name }}
-                        @if (session()?.branchId === branch.id) {
-                          <span class="text-xs">✓</span>
+                        <span>{{ branch.name }}</span>
+                        @if (session()?.branchId === branch.id && session()?.storeId === store.id) {
+                          <av-svg-icon name="check" [size]="14"/>
                         }
                       </button>
                     }
                   </div>
                 }
               </div>
-              <div
-                class="pt-2 border-t border-zinc-100 dark:border-zinc-700 mt-2"
-              >
-                <button
-                  (click)="logout()"
-                  class="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors rounded"
-                >
-                  Terminate
-                </button>
+
+              <div class="ctx-divider"></div>
+
+              <div class="ctx-scroll" style="max-height: 150px; border-top: 1px solid var(--sidebar-border);">
+                <div class="ctx-store-group">
+                  <span class="ctx-store-label">Language</span>
+                  @for (lang of languages(); track lang.id) {
+                    <button
+                      class="ctx-item"
+                      [class.active]="session()?.languageId === lang.id"
+                      (click)="switchLanguage(lang.id)"
+                      [disabled]="isChangingCtx()"
+                      role="option"
+                      type="button"
+                    >
+                      <span>{{ lang.name }}</span>
+                      @if (session()?.languageId === lang.id) {
+                        <av-svg-icon name="check" [size]="14"/>
+                      }
+                    </button>
+                  }
+                </div>
               </div>
+
+              <div class="ctx-divider"></div>
+
+              <button class="ctx-logout" (click)="logout()" type="button">
+                <av-svg-icon name="logout" [size]="15"/>
+                <span>Sign out</span>
+              </button>
             </div>
           }
         </div>
       </div>
     </header>
 
-    <!-- Page Content Container -->
-    <main class="flex-grow p-8 overflow-y-auto">
-      <router-outlet></router-outlet>
+    <!-- PAGE CONTENT -->
+    <main class="erp-content" role="main">
+      <router-outlet/>
     </main>
-  </div>
-</div>
+
+  </div><!-- /erp-main -->
+
+</div><!-- /erp-root -->

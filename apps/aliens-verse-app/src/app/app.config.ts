@@ -8,10 +8,11 @@ import { appRoutes } from './app.routes';
 import { apiInterceptor } from '@aliens-verse/api-sdk';
 import { APP_INITIALIZER } from '@angular/core';
 import { PlatformLocation } from '@angular/common';
-import { PublicContextService, TenantResolverService } from '@aliens-verse/api-sdk';
+import { PublicContextService, TenantResolverService, FeatureFlagsService } from '@aliens-verse/api-sdk';
 import { LookupService } from '@aliens-verse/lookup-sdk';
 import { AuthService } from '@aliens-verse/auth-sdk';
 import { provideLandingPagePlugin } from '@aliens-verse/landing-page';
+import { provideWebsiteBuilderPlugin } from '@aliens-verse/website-builder';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,6 +24,7 @@ export const appConfig: ApplicationConfig = {
     // Each plugin registers its Manifest + Components via DI.
     // This is the SINGLE SOURCE OF TRUTH for plugin configuration.
     provideLandingPagePlugin(),
+    provideWebsiteBuilderPlugin(),
 
     // Ensure public context (company & languages) are initialized before app renders.
     {
@@ -33,21 +35,20 @@ export const appConfig: ApplicationConfig = {
           auth: AuthService,
           lookup: LookupService,
           tenantResolver: TenantResolverService,
-          platformLocation: PlatformLocation
+          platformLocation: PlatformLocation,
+          featureFlags: FeatureFlagsService
         ) =>
         async () => {
           // 1. Resolve the tenant early from the current URL to prevent missing headers (SSR Safe)
           tenantResolver.resolveTenant(platformLocation.pathname);
 
-          // No longer fetching lookups explicitly.
-          // They are fetched inside publicCtx.initContext() from CompanyProfile/Profile.
-          try {
-            await publicCtx.initContext();
-          } catch (e) {
-            console.error('Bootstrap: failed to init public context', e);
-          }
+          // 2. Load context + feature flags in parallel for faster startup
+          await Promise.all([
+            publicCtx.initContext().catch(e => console.error('Bootstrap: failed to init public context', e)),
+            featureFlags.loadFlags() // non-critical, silently handles errors internally
+          ]);
         },
-      deps: [PublicContextService, AuthService, LookupService, TenantResolverService, PlatformLocation],
+      deps: [PublicContextService, AuthService, LookupService, TenantResolverService, PlatformLocation, FeatureFlagsService],
       multi: true,
     },
   ],

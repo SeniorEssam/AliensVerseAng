@@ -1,0 +1,46 @@
+<div class="modal-backdrop" (click)="close.emit()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="header-meta">
+        <h3 class="modal-title">Add Layout Section</h3>
+        <p class="modal-subtitle">Browse and add component layouts to your page</p>
+      </div>
+      <button class="btn-close" (click)="close.emit()" title="Close dialog">
+        <av-svg-icon name="x" [size]="16"></av-svg-icon>
+      </button>
+    </div>
+
+    <!-- Modal Body: Grouped Layouts -->
+    <div class="modal-body">
+      @if (allLayouts().length === 0) {
+        <div class="empty-layouts">No layouts templates found in the database.</div>
+      } @else {
+        @for (group of allLayouts(); track group.typeName) {
+          <div class="layout-group-section">
+            <h4 class="group-title">{{ group.typeName }}</h4>
+            <div class="layouts-grid">
+              @for (layout of group.layouts; track layout.id) {
+                <div class="layout-card" (click)="onSelect(layout)">
+                  <div class="card-image-wrapper">
+                    @if (layout.previewImage) {
+                      <img [src]="layout.previewImage" [alt]="layout.name" class="layout-preview-img">
+                    } @else {
+                      <div class="layout-placeholder">
+                        <av-svg-icon name="layout" [size]="32" class="placeholder-icon"></av-svg-icon>
+                      </div>
+                    }
+                  </div>
+                  <div class="card-footer">
+                    <span class="layout-title">{{ layout.name }}</span>
+                    <button class="btn-add">Add</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>

@@ -15,7 +15,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { DeviceService } from '@aliens-verse/device-sdk';
-import { ApiService, PublicContextService } from '@aliens-verse/api-sdk';
+import { ApiService, PublicContextService, TenantResolverService } from '@aliens-verse/api-sdk';
 import { ThemeService } from '@aliens-verse/ui';
 
 @Component({
@@ -33,6 +33,7 @@ export class ActivationComponent implements AfterViewInit, OnDestroy {
   private readonly apiService = inject(ApiService);
   private readonly publicCtx = inject(PublicContextService);
   private readonly themeService = inject(ThemeService);
+  private readonly tenantResolver = inject(TenantResolverService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
 
@@ -221,7 +222,7 @@ export class ActivationComponent implements AfterViewInit, OnDestroy {
         // Success: Backend will have set the 'av_server_device' HttpOnly cookie
         // We can redirect to login or dashboard
         console.log('Device Verified Successfully!');
-        this.router.navigate(['/login']);
+        this.router.navigateByUrl(this.tenantResolver.buildUrl('login'));
       } else {
         this.errorMessage.set(response.message || 'Invalid OTP');
       }

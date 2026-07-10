@@ -1,0 +1,58 @@
+<div class="canvas-container">
+  <div class="canvas-viewport">
+    @if (sections().length === 0) {
+      <div class="canvas-empty">
+        <div class="empty-icon">🌐</div>
+        <h2>Start building your page</h2>
+        <p>No sections added yet. Click "+ Add Section" to begin.</p>
+      </div>
+    } @else {
+      <div class="sections-stack">
+        @for (sec of sections(); track sec.companySectionId) {
+          <div
+            class="section-card"
+            [class.active]="selectedId() === sec.companySectionId"
+            [class.hidden-sec]="!sec.isVisible"
+            (click)="onSelect(sec)"
+          >
+            <!-- Canvas Item Preview Header / Placeholder -->
+            <div class="card-preview">
+              @if (sec.previewImage) {
+                <img [src]="sec.previewImage" [alt]="sec.layoutName" class="preview-img">
+              } @else {
+                <div class="preview-placeholder">
+                  <av-svg-icon name="image" [size]="32" class="placeholder-icon"></av-svg-icon>
+                  <span class="placeholder-text">{{ sec.layoutName }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Floating Overlay Control Toolbar -->
+            <div class="section-overlay">
+              <span class="section-tag">{{ sec.typeName }}</span>
+              <div class="overlay-actions">
+                <button
+                  class="overlay-btn"
+                  (click)="onChangeLayout(sec, $event)"
+                  title="Change Layout Template"
+                >
+                  <av-svg-icon name="layout" [size]="14"></av-svg-icon>
+                </button>
+                <button
+                  class="overlay-btn"
+                  (click)="toggleVisible(sec, $event)"
+                  [title]="sec.isVisible ? 'Hide Section' : 'Show Section'"
+                >
+                  <av-svg-icon
+                    [name]="sec.isVisible ? 'eye' : 'eye-off'"
+                    [size]="14"
+                  ></av-svg-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

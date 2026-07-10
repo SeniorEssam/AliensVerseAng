@@ -4,7 +4,7 @@ import {
   tenantMatchGuard,
   tenantActivateGuard,
   tenantActivateChildGuard,
-  PluginManagerService
+  PluginManagerService,
 } from '@aliens-verse/api-sdk';
 import {
   activationGuard,
@@ -37,8 +37,9 @@ function buildPluginRoutes(): Route[] {
     {
       path: 'login',
       canActivate: [loginRedirectGuard],
-      loadComponent: () => import('@aliens-verse/auth-plugin').then(m => m.LoginComponent)
-    }
+      loadComponent: () =>
+        import('@aliens-verse/auth-plugin').then((m) => m.LoginComponent),
+    },
   ];
 
   // Activation plugin routes
@@ -46,20 +47,25 @@ function buildPluginRoutes(): Route[] {
     {
       path: 'activation',
       canActivate: [activeDeviceRedirectGuard],
-      loadChildren: () => import('@aliens-verse/activation-plugin').then(m => m.ACTIVATION_ROUTES)
-    }
+      loadChildren: () =>
+        import('@aliens-verse/activation-plugin').then(
+          (m) => m.ACTIVATION_ROUTES,
+        ),
+    },
   ];
 
   // Landing page plugin routes (catch-all, must be last)
   const landingRoutes: Route[] = [
     {
       path: '',
-      loadChildren: () => import('@aliens-verse/landing-page').then(m => m.LANDING_ROUTES)
+      loadChildren: () =>
+        import('@aliens-verse/landing-page').then((m) => m.LANDING_ROUTES),
     },
     {
       path: ':pageSlug',
-      loadChildren: () => import('@aliens-verse/landing-page').then(m => m.LANDING_ROUTES)
-    }
+      loadChildren: () =>
+        import('@aliens-verse/landing-page').then((m) => m.LANDING_ROUTES),
+    },
   ];
 
   return [...activationRoutes, ...authRoutes, ...landingRoutes];
@@ -70,7 +76,11 @@ export function buildRoutes(config: typeof tenantConfig): Route[] {
 
   if (config.mode === 'multi') {
     return [
-      { path: 'tenant-not-found', component: TenantNotFoundComponent, pathMatch: 'full' },
+      {
+        path: 'tenant-not-found',
+        component: TenantNotFoundComponent,
+        pathMatch: 'full',
+      },
       { path: '', redirectTo: config.defaultCompanySlug, pathMatch: 'full' },
 
       {
@@ -86,18 +96,33 @@ export function buildRoutes(config: typeof tenantConfig): Route[] {
             canActivate: [activationGuard, authGuard],
             children: [
               { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-              { path: 'dashboard', loadComponent: () => import('./app').then(m => m.AppComponent) }
-            ]
+              {
+                path: 'dashboard',
+                loadComponent: () =>
+                  import('./app').then((m) => m.AppComponent),
+              },
+              {
+                path: 'website-builder',
+                loadChildren: () =>
+                  import('@aliens-verse/website-builder').then(
+                    (m) => m.BUILDER_ROUTES,
+                  ),
+              },
+            ],
           },
           ...pluginRoutes,
-        ]
+        ],
       },
 
-      { path: '**', redirectTo: config.defaultCompanySlug }
+      { path: '**', redirectTo: config.defaultCompanySlug },
     ];
   } else {
     return [
-      { path: 'tenant-not-found', component: TenantNotFoundComponent, pathMatch: 'full' },
+      {
+        path: 'tenant-not-found',
+        component: TenantNotFoundComponent,
+        pathMatch: 'full',
+      },
       {
         path: '',
         canActivate: [tenantActivateGuard],
@@ -110,13 +135,34 @@ export function buildRoutes(config: typeof tenantConfig): Route[] {
             canActivate: [activationGuard, authGuard],
             children: [
               { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-              { path: 'dashboard', loadComponent: () => import('./app').then(m => m.AppComponent) }
-            ]
+              {
+                path: 'dashboard',
+                loadComponent: () =>
+                  import('./app').then((m) => m.AppComponent),
+              },
+              {
+                path: 'website-builder',
+                loadChildren: () =>
+                  import('@aliens-verse/website-builder').then(
+                    (m) => m.BUILDER_ROUTES,
+                  ),
+              },
+              {
+                path: 'settings',
+                redirectTo: 'website-builder',
+                pathMatch: 'full',
+              },
+              {
+                path: 'setting',
+                redirectTo: 'website-builder',
+                pathMatch: 'full',
+              },
+            ],
           },
           ...pluginRoutes,
-        ]
+        ],
       },
-      { path: '**', redirectTo: '' }
+      { path: '**', redirectTo: '' },
     ];
   }
 }

@@ -58,7 +58,7 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   // CSRF token configuration
-  const csrfToken = getCookie('csrf-token');
+  const csrfToken = getCookie('csrf_token');
   if (csrfToken) {
     headers = headers.set('X-CSRF-Token', csrfToken);
   }

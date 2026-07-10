@@ -1,0 +1,109 @@
+<div class="builder-root">
+  <!-- Topbar Header -->
+  <header class="builder-bar">
+    <div class="bar-left">
+      <a routerLink="/erp/dashboard" class="back-link">
+        <av-svg-icon name="chevron-left" [size]="16"></av-svg-icon>
+        <span>Dashboard</span>
+      </a>
+      <span class="bar-sep">/</span>
+      <span class="builder-title">Website Builder</span>
+
+      <!-- Page Selector Dropdown -->
+      <div class="page-selector-wrapper">
+        <select class="page-select" [value]="builderService.currentSlug()" (change)="onPageChange($event)">
+          @for (p of pages(); track p.id) {
+            <option [value]="p.slug">{{ p.pageName }} ({{ p.slug }})</option>
+          }
+        </select>
+        <button class="btn-action-icon" (click)="showCreatePage()" title="Create New Page">
+          <av-svg-icon name="plus" [size]="14"></av-svg-icon>
+        </button>
+        <button class="btn-action-icon" (click)="showEditPage()" title="Edit Page Configuration">
+          <av-svg-icon name="settings" [size]="14"></av-svg-icon>
+        </button>
+        <button class="btn-action-icon btn-danger" 
+                [disabled]="builderService.currentSlug() === 'home'" 
+                (click)="deletePage()" 
+                title="Delete Current Page">
+          <av-svg-icon name="trash" [size]="14"></av-svg-icon>
+        </button>
+      </div>
+    </div>
+    <div class="builder-actions">
+      <button class="btn-outline" (click)="saveAll()">
+        <av-svg-icon name="eye" [size]="14"></av-svg-icon>
+        <span>Preview</span>
+      </button>
+      <button class="btn-primary" (click)="saveAll()">
+        <av-svg-icon name="check" [size]="14"></av-svg-icon>
+        <span>Save Changes</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  @if (loading()) {
+    <div class="builder-loading">
+      <div class="spinner"></div>
+      <span class="loading-text">Loading workspace...</span>
+    </div>
+  } @else {
+    <div class="builder-workspace">
+      <!-- 1. Left panel: sections hierarchy -->
+      <av-layers-panel
+        [sections]="page()?.sections ?? []"
+        [selectedId]="selectedSection()?.companySectionId ?? null"
+        (select)="builderService.selectSection($event)"
+        (visibilityToggle)="builderService.toggleVisibility($event.id, $event.visible)"
+        (reorder)="builderService.reorder($event)"
+        (deleteSection)="deleteSection($event)"
+        (addSection)="addSectionOpen.set(true)"
+      ></av-layers-panel>
+
+      <!-- 2. Middle: Live interactive canvas -->
+      <av-builder-canvas
+        [sections]="page()?.sections ?? []"
+        [selectedId]="selectedSection()?.companySectionId ?? null"
+        (sectionClick)="builderService.selectSection($event)"
+        (changeLayout)="builderService.openPicker()"
+        (visibilityToggle)="builderService.toggleVisibility($event.id, $event.visible)"
+      ></av-builder-canvas>
+
+      <!-- 3. Right: Section Property Config Editor Drawer -->
+      @if (selectedSection()) {
+        <av-properties-panel
+          [section]="selectedSection()!"
+          (save)="builderService.saveSettings($event.sectionId, $event.settings)"
+          (changeLayout)="builderService.openPicker()"
+        ></av-properties-panel>
+      }
+    </div>
+  }
+
+  <!-- Popup Layout Picker Grid Selector -->
+  @if (layoutPickerOpen()) {
+    <av-layout-picker
+      [section]="selectedSection()!"
+      (select)="builderService.switchLayout(selectedSection()!.companySectionId, $event)"
+      (close)="builderService.closePicker()"
+    ></av-layout-picker>
+  }
+
+  <!-- Popup Add Layout Section Modal -->
+  @if (addSectionOpen()) {
+    <av-add-section-picker
+      (select)="addSection($event)"
+      (close)="addSectionOpen.set(false)"
+    ></av-add-section-picker>
+  }
+
+  <!-- Popup Page Config Modal Form -->
+  @if (pageConfigOpen()) {
+    <av-page-config-modal
+      [page]="selectedPageToEdit()"
+      (save)="savePageConfig($event)"
+      (close)="pageConfigOpen.set(false)"
+    ></av-page-config-modal>
+  }
+</div>

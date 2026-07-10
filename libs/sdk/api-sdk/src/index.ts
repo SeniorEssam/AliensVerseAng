@@ -4,6 +4,7 @@ export * from './lib/models/api-response.model';
 export * from './lib/models/section.model';
 export * from './lib/interceptors/api.interceptor';
 export * from './lib/services/public-context.service';
+export * from './lib/services/feature-flags.service';
 
 // Foundation Layer Exports
 export * from './lib/theme/contracts';

@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { ApiService } from '@aliens-verse/api-sdk';
+import { ApiService, FeatureFlagsService } from '@aliens-verse/api-sdk';
 import { DeviceService } from '@aliens-verse/device-sdk';
 import { firstValueFrom } from 'rxjs';
 import { Router } from '@angular/router';
@@ -20,6 +20,7 @@ export interface UserSession {
 export class AuthService {
   private readonly apiService = inject(ApiService);
   private readonly deviceService = inject(DeviceService);
+  private readonly featureFlags = inject(FeatureFlagsService);
   private readonly router = inject(Router);
 
   // State Signals (Isolated from LocalStorage)
@@ -39,12 +40,21 @@ export class AuthService {
       
       if (res.statusCode === 200) {
         this.authStatus.set('authenticated');
-        // TODO: Populate session info if returned by a more specific 'profile' endpoint
+        this.currentSession.set({
+          userId: res.data.userId,
+          email: res.data.email,
+          branchId: res.data.branchId,
+          storeId: res.data.storeId,
+          languageId: res.data.languageId
+        });
+        await this.featureFlags.loadFlags();
       } else {
         this.authStatus.set('unauthenticated');
+        this.currentSession.set(null);
       }
     } catch (error) {
       this.authStatus.set('unauthenticated');
+      this.currentSession.set(null);
     }
   }
 
@@ -67,6 +77,7 @@ export class AuthService {
         storeId: res.data.storeId,
         languageId: res.data.languageId
       });
+      await this.featureFlags.loadFlags();
       return true;
     }
     return false;

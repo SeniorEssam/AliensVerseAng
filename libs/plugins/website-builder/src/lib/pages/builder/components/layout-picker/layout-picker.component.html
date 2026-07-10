@@ -1,0 +1,47 @@
+<div class="modal-backdrop" (click)="close.emit()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="header-meta">
+        <h3 class="modal-title">Select Layout Template</h3>
+        <span class="type-badge">{{ section().typeName }}</span>
+      </div>
+      <button class="btn-close" (click)="close.emit()" title="Close dialog">
+        <av-svg-icon name="x" [size]="16"></av-svg-icon>
+      </button>
+    </div>
+
+    <!-- Modal Body: Layouts Grid -->
+    <div class="modal-body">
+      @if (section().availableLayouts.length === 0) {
+        <div class="empty-layouts">No other layouts available for this type.</div>
+      } @else {
+        <div class="layouts-grid">
+          @for (layout of section().availableLayouts; track layout.id) {
+            <div
+              class="layout-card"
+              [class.active]="layout.name === section().layoutName"
+              (click)="onSelect(layout)"
+            >
+              <div class="card-image-wrapper">
+                @if (layout.previewImage) {
+                  <img [src]="layout.previewImage" [alt]="layout.name" class="layout-preview-img">
+                } @else {
+                  <div class="layout-placeholder">
+                    <av-svg-icon name="layout" [size]="32" class="placeholder-icon"></av-svg-icon>
+                  </div>
+                }
+              </div>
+              <div class="card-footer">
+                <span class="layout-title">{{ layout.name }}</span>
+                @if (layout.name === section().layoutName) {
+                  <span class="active-tag">Active</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+</div>
