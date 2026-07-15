@@ -10,7 +10,11 @@ export async function netlifyAppEngineHandler(request: Request): Promise<Respons
   const context = getContext();
 
   const result = await angularAppEngine.handle(request, context);
-  return result || new Response('Not found', { status: 404 });
+  if (result) {
+    result.headers.set('x-ssr-processed', 'true');
+    return result;
+  }
+  return new Response('Not found', { status: 404 });
 }
 
 /**

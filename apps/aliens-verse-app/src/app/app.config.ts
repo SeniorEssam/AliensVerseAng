@@ -30,7 +30,8 @@ export const appConfig: ApplicationConfig = {
       withHttpTransferCacheOptions({
         includePostRequests: false,
         includeRequestsWithAuthHeaders: true,
-        includeHeaders: ['X-Company-Slug', 'Accept-Language', 'LanguageId']
+        includeHeaders: ['X-Company-Slug', 'Accept-Language', 'LanguageId'],
+        filter: (req) => req.method === 'GET'
       })
     ),
     provideZonelessChangeDetection(),
