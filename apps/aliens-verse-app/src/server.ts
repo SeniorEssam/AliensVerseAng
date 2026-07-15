@@ -1,9 +1,12 @@
 import { AngularAppEngine, createRequestHandler } from '@angular/ssr';
 import { getContext } from '@netlify/angular-runtime/context.mjs';
 
-const angularAppEngine = new AngularAppEngine();
+let angularAppEngine: AngularAppEngine;
 
 export async function netlifyAppEngineHandler(request: Request): Promise<Response> {
+  if (!angularAppEngine) {
+    angularAppEngine = new AngularAppEngine();
+  }
   const context = getContext();
 
   const result = await angularAppEngine.handle(request, context);

@@ -24,7 +24,8 @@
         "server": "apps/aliens-verse-app/src/main.server.ts",
         "ssr": {
           "entry": "apps/aliens-verse-app/src/server.ts"
-        }
+        },
+        "outputMode": "server"
       },
       "configurations": {
         "production": {
