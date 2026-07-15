@@ -1,0 +1,7 @@
+[build]
+  publish = "dist/apps/aliens-verse-app/browser"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
