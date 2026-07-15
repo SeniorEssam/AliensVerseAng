@@ -22,7 +22,8 @@
         <div class="nav-inner">
           <a
             class="nav-logo"
-            (click)="scrollToSection('home')"
+            [href]="buildLink('home')"
+            (click)="scrollToSection($event, 'home')"
             role="button"
             tabindex="0"
           >
@@ -35,9 +36,9 @@
           <ul class="nav-links">
             @for (section of menuSections(); track section.id) {
               <li>
-                <button class="nav-link" (click)="scrollToSection(section.id)">
+                <a class="nav-link" style="text-decoration: none;" [href]="buildLink(section.id)" (click)="scrollToSection($event, section.id)">
                   {{ section.menuTitle }}
-                </button>
+                </a>
               </li>
             }
           </ul>
@@ -65,7 +66,7 @@
               {{ isDark() ? 'Light' : 'Dark' }}
             </button>
 
-            <button class="nav-cta" (click)="launchErp()">Launch ERP ›</button>
+            <a class="nav-cta" style="text-decoration: none;" [href]="getErpLink()" (click)="launchErp($event)">Launch ERP ›</a>
 
             <button
               class="hamburger"
@@ -82,9 +83,9 @@
         @if (isMobileMenuOpen()) {
           <div class="mobile-menu">
             @for (section of menuSections(); track section.id) {
-              <button class="mobile-link" (click)="scrollToSection(section.id)">
+              <a class="mobile-link" style="text-decoration: none;" [href]="buildLink(section.id)" (click)="scrollToSection($event, section.id)">
                 {{ section.menuTitle }}
-              </button>
+              </a>
             }
           </div>
         }

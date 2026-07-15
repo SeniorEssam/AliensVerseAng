@@ -485,3 +485,51 @@
   from { opacity: 0; transform: translateX(-6px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MOBILE OVERLAY SIDEBAR
+// ─────────────────────────────────────────────────────────────────────────────
+@media (max-width: 992px) {
+  .erp-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+    height: 100vh;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+  }
+
+  .erp-root[data-theme="dark"] .erp-sidebar {
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .ctx-store, .ctx-branch, .ctx-sep {
+    font-size: 12px;
+  }
+  
+  .topbar-left {
+    gap: 8px;
+  }
+
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: fadeSlideIn 0.2s ease;
+  }
+
+  .erp-main {
+    margin-left: var(--sidebar-collapsed-w);
+    width: calc(100% - var(--sidebar-collapsed-w));
+  }
+}
+
+.mobile-only {
+  display: none;
+  @media (max-width: 992px) {
+    display: block;
+  }
+}

@@ -1,7 +1,12 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { ApiService } from '@aliens-verse/api-sdk';
 import { Observable, firstValueFrom } from 'rxjs';
-import { BuilderPage, BuilderSection, PageListItem, LayoutGroup } from '../models/builder.models';
+import {
+  BuilderPage,
+  BuilderSection,
+  PageListItem,
+  LayoutGroup,
+} from '../models/builder.models';
 
 @Injectable({ providedIn: 'root' })
 export class WebsiteBuilderService {
@@ -21,14 +26,17 @@ export class WebsiteBuilderService {
   readonly pages = computed(() => this._pages());
   readonly allLayouts = computed(() => this._allLayouts());
   readonly currentSlug = computed(() => this._currentSlug());
-  readonly selectedSection = computed(() =>
-    this._page()?.sections.find(s => s.companySectionId === this._selectedId()) ?? null
+  readonly selectedSection = computed(
+    () =>
+      this._page()?.sections.find(
+        (s) => s.companySectionId === this._selectedId(),
+      ) ?? null,
   );
 
   loadPages(): void {
     this.api.get<any>('website-builder/pages').subscribe({
-      next: res => this._pages.set(res?.data ?? []),
-      error: () => this._pages.set([])
+      next: (res) => this._pages.set(res?.data ?? []),
+      error: () => this._pages.set([]),
     });
   }
 
@@ -46,13 +54,15 @@ export class WebsiteBuilderService {
 
   loadAllLayouts(): void {
     this.api.get<any>('website-builder/layouts').subscribe({
-      next: res => this._allLayouts.set(res?.data ?? []),
-      error: () => this._allLayouts.set([])
+      next: (res) => this._allLayouts.set(res?.data ?? []),
+      error: () => this._allLayouts.set([]),
     });
   }
 
   addSection(pageId: string, layoutId: string): Observable<any> {
-    return this.api.post<any>(`website-builder/page/${pageId}/section`, { layoutId });
+    return this.api.post<any>(`website-builder/page/${pageId}/section`, {
+      layoutId,
+    });
   }
 
   deleteSection(pageSectionId: string): Observable<any> {
@@ -63,11 +73,11 @@ export class WebsiteBuilderService {
     this._currentSlug.set(slug);
     this._loading.set(true);
     this.api.get<any>(`website-builder/page/${slug}`).subscribe({
-      next: res => {
+      next: (res) => {
         this._page.set(res?.data ?? null);
         this._loading.set(false);
       },
-      error: () => this._loading.set(false)
+      error: () => this._loading.set(false),
     });
   }
 
@@ -84,7 +94,11 @@ export class WebsiteBuilderService {
   }
 
   switchLayout(sectionId: string, newLayoutId: string): void {
-    this.api.patch<any>('website-builder/switch-layout', { companySectionId: sectionId, newLayoutId })
+    this.api
+      .patch<any>('website-builder/switch-layout', {
+        companySectionId: sectionId,
+        newLayoutId,
+      })
       .subscribe(() => {
         this.closePicker();
         this.loadPage(this._currentSlug());
@@ -92,60 +106,87 @@ export class WebsiteBuilderService {
   }
 
   saveSettings(sectionId: string, settings: Record<string, string>): void {
-    this.api.patch<any>(`website-builder/section/${sectionId}/settings`, settings).subscribe({
-      next: () => {
-        // Optimistically update the UI settings
-        this._page.update(page => {
-          if (!page) return page;
-          return {
-            ...page,
-            sections: page.sections.map(s =>
-              s.companySectionId === sectionId ? { ...s, settings } : s
-            )
-          };
-        });
-      }
-    });
-  }
-
-  toggleVisibility(pageSectionId: string, isVisible: boolean): void {
-    this.api.post<any>(`website-builder/section/${pageSectionId}/visibility`, isVisible)
+    this.api
+      .patch<any>(`website-builder/section/${sectionId}/settings`, settings)
       .subscribe({
         next: () => {
-          this._page.update(page => {
+          // Optimistically update the UI settings
+          this._page.update((page) => {
             if (!page) return page;
             return {
               ...page,
-              sections: page.sections.map(s =>
-                s.pageSectionId === pageSectionId ? { ...s, isVisible } : s
-              )
+              sections: page.sections.map((s) =>
+                s.companySectionId === sectionId ? { ...s, settings } : s,
+              ),
             };
           });
-        }
+        },
       });
   }
 
-  reorder(items: { sectionId: string; sort: number }[]): void {
-    const pageId = this._page()?.pageId;
-    if (!pageId) return;
-
-    this.api.patch<any>(`website-builder/page/${pageId}/reorder`, items)
+  toggleVisibility(pageSectionId: string, isVisible: boolean): void {
+    this.api
+      .post<any>(
+        `website-builder/section/${pageSectionId}/visibility`,
+        isVisible,
+      )
       .subscribe({
         next: () => {
-          // Optimistically update sorted order
-          this._page.update(page => {
+          this._page.update((page) => {
             if (!page) return page;
             return {
               ...page,
-              sections: [...page.sections]
-                .map(s => {
-                  const match = items.find(item => item.sectionId === s.companySectionId);
-                  return match ? { ...s, sort: match.sort } : s;
-                })
-                .sort((a, b) => a.sort - b.sort)
+              sections: page.sections.map((s) =>
+                s.pageSectionId === pageSectionId ? { ...s, isVisible } : s,
+              ),
             };
           });
-        }
+        },
+      });
+  }
+
+  reorder(moveData: { id: string; direction: 'up' | 'down' }): void {
+    const pageId = this._page()?.pageId;
+    if (!pageId) return;
+
+    const currentSections = this._page()?.sections ?? [];
+    const currentIndex = currentSections.findIndex(
+      (s) => s.companySectionId === moveData.id,
+    );
+
+    if (currentIndex === -1) return;
+
+    // Determine swap index based on direction
+    const swapIndex =
+      moveData.direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+    if (swapIndex < 0 || swapIndex >= currentSections.length) return;
+
+    // Create reorder payload with updated sort values
+    const items = currentSections.map((s, idx) => ({
+      sectionId: s.companySectionId,
+      sort:
+        idx === currentIndex
+          ? swapIndex
+          : idx === swapIndex
+            ? currentIndex
+            : idx,
+    }));
+
+    this.api
+      .patch<any>(`website-builder/page/${pageId}/reorder`, items)
+      .subscribe({
+        next: () => {
+          this._page.update((page) => {
+            if (!page) return page;
+            const newSections = [...page.sections];
+            [newSections[currentIndex], newSections[swapIndex]] = [
+              newSections[swapIndex],
+              newSections[currentIndex],
+            ];
+            return { ...page, sections: newSections };
+          });
+        },
       });
   }
 }

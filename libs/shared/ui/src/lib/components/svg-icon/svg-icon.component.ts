@@ -44,6 +44,9 @@ import { CommonModule } from '@angular/common';
         @case ('chevron-down') {
           <path d="M6 9l6 6 6-6"/>
         }
+        @case ('chevron-up') {
+          <path d="M18 15l-6-6-6 6"/>
+        }
         @case ('sun') {
           <circle cx="12" cy="12" r="5"/>
           <line x1="12" y1="1" x2="12" y2="3"/>

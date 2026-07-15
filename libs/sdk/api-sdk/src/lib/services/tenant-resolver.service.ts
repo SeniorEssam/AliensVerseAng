@@ -35,10 +35,11 @@ export class TenantResolverService {
     const previousSlug = this._companySlug();
 
     if (this._mode() === 'multi') {
-      this._companySlug.set(segments[0] || null);
+      const slug = segments[0] || tenantConfig.defaultCompanySlug || null;
+      this._companySlug.set(slug);
       this._currentPage.set(segments.slice(1).join('/') || 'home');
     } else {
-      this._companySlug.set(null);
+      this._companySlug.set(tenantConfig.defaultCompanySlug || null);
       this._currentPage.set(segments.join('/') || 'home');
     }
 

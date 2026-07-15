@@ -7,6 +7,9 @@
   <!-- ══════════════════════════════════════════════════════
        SIDEBAR
   ══════════════════════════════════════════════════════ -->
+  @if (!sidebarCollapsed()) {
+    <div class="sidebar-backdrop mobile-only" (click)="toggleSidebar()"></div>
+  }
   <aside class="erp-sidebar">
 
     <!-- Logo + Company Info -->

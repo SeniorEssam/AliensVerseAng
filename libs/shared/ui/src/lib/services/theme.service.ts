@@ -1,4 +1,5 @@
-import { Injectable, signal, effect } from '@angular/core';
+import { Injectable, signal, effect, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { getCookie, setCookie, COOKIE_NAMES } from '@aliens-verse/cookies';
 
 export type AppTheme = 'light' | 'dark';
@@ -8,6 +9,7 @@ export type AppTheme = 'light' | 'dark';
 })
 export class ThemeService {
   readonly currentTheme = signal<AppTheme>('dark');
+  private platformId = inject(PLATFORM_ID);
 
   constructor() {
     this.initializeTheme();
@@ -20,10 +22,17 @@ export class ThemeService {
   }
 
   private initializeTheme() {
-    // Priority: localStorage > cookie > system preference
-    const localStored = localStorage.getItem(COOKIE_NAMES.THEME) as AppTheme;
-    const savedTheme =
-      localStored || (getCookie(COOKIE_NAMES.THEME) as AppTheme);
+    let savedTheme: AppTheme | null = null;
+    
+    if (isPlatformBrowser(this.platformId)) {
+      // Priority: localStorage > cookie > system preference
+      const localStored = localStorage.getItem(COOKIE_NAMES.THEME) as AppTheme;
+      savedTheme = localStored || (getCookie(COOKIE_NAMES.THEME) as AppTheme);
+    } else {
+      // On server, fallback to cookie if available
+      savedTheme = getCookie(COOKIE_NAMES.THEME) as AppTheme;
+    }
+
     if (savedTheme === 'light' || savedTheme === 'dark') {
       this.currentTheme.set(savedTheme);
     } else {
@@ -35,22 +44,30 @@ export class ThemeService {
   toggleTheme() {
     const newTheme = this.currentTheme() === 'dark' ? 'light' : 'dark';
     this.currentTheme.set(newTheme);
-    setCookie(COOKIE_NAMES.THEME, newTheme, { days: 365 * 10 });
-    localStorage.setItem(COOKIE_NAMES.THEME, newTheme);
+    
+    if (isPlatformBrowser(this.platformId)) {
+      setCookie(COOKIE_NAMES.THEME, newTheme, { days: 365 * 10 });
+      localStorage.setItem(COOKIE_NAMES.THEME, newTheme);
+    }
   }
 
   setTheme(theme: AppTheme) {
     this.currentTheme.set(theme);
-    setCookie(COOKIE_NAMES.THEME, theme, { days: 365 * 10 });
-    localStorage.setItem(COOKIE_NAMES.THEME, theme);
+    
+    if (isPlatformBrowser(this.platformId)) {
+      setCookie(COOKIE_NAMES.THEME, theme, { days: 365 * 10 });
+      localStorage.setItem(COOKIE_NAMES.THEME, theme);
+    }
   }
 
   private applyTheme(theme: AppTheme) {
-    const html = document.documentElement;
-    if (theme === 'dark') {
-      html.classList.add('dark');
-    } else {
-      html.classList.remove('dark');
+    if (isPlatformBrowser(this.platformId)) {
+      const html = document.documentElement;
+      if (theme === 'dark') {
+        html.classList.add('dark');
+      } else {
+        html.classList.remove('dark');
+      }
     }
   }
 

@@ -8,7 +8,7 @@ import { SvgIconComponent } from '@aliens-verse/ui';
   standalone: true,
   imports: [CommonModule, SvgIconComponent],
   templateUrl: './builder-canvas.component.html',
-  styleUrl: './builder-canvas.component.scss'
+  styleUrl: './builder-canvas.component.scss',
 })
 export class BuilderCanvasComponent {
   sections = input.required<BuilderSection[]>();
@@ -17,6 +17,9 @@ export class BuilderCanvasComponent {
   sectionClick = output<string | null>();
   changeLayout = output<void>();
   visibilityToggle = output<{ id: string; visible: boolean }>();
+  reorder = output<{ id: string; direction: 'up' | 'down' }>();
+  deleteSection = output<string>();
+  addSection = output<void>();
 
   onSelect(sec: BuilderSection): void {
     this.sectionClick.emit(sec.companySectionId);
@@ -32,7 +35,22 @@ export class BuilderCanvasComponent {
     event.stopPropagation();
     this.visibilityToggle.emit({
       id: sec.pageSectionId,
-      visible: !sec.isVisible
+      visible: !sec.isVisible,
     });
+  }
+
+  moveUp(sec: BuilderSection, event: Event): void {
+    event.stopPropagation();
+    this.reorder.emit({ id: sec.companySectionId, direction: 'up' });
+  }
+
+  moveDown(sec: BuilderSection, event: Event): void {
+    event.stopPropagation();
+    this.reorder.emit({ id: sec.companySectionId, direction: 'down' });
+  }
+
+  deleteSec(sec: BuilderSection, event: Event): void {
+    event.stopPropagation();
+    this.deleteSection.emit(sec.pageSectionId);
   }
 }

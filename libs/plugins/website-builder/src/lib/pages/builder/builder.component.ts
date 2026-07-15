@@ -3,15 +3,15 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { WebsiteBuilderService } from '../../services/website-builder.service';
-import { SvgIconComponent } from '@aliens-verse/ui';
 
 // Import subcomponents
-import { LayersPanelComponent } from './components/layers-panel/layers-panel.component';
 import { BuilderCanvasComponent } from './components/builder-canvas/builder-canvas.component';
 import { PropertiesPanelComponent } from './components/properties-panel/properties-panel.component';
 import { LayoutPickerComponent } from './components/layout-picker/layout-picker.component';
 import { AddSectionPickerComponent } from './components/add-section-picker/add-section-picker.component';
 import { PageConfigModalComponent } from './components/page-config-modal/page-config-modal.component';
+import { SvgIconComponent } from '../../../../../../shared/ui/src';
+import { TenantResolverService } from '@aliens-verse/api-sdk';
 
 @Component({
   selector: 'av-website-builder',
@@ -20,20 +20,20 @@ import { PageConfigModalComponent } from './components/page-config-modal/page-co
     CommonModule,
     RouterModule,
     SvgIconComponent,
-    LayersPanelComponent,
     BuilderCanvasComponent,
     PropertiesPanelComponent,
     LayoutPickerComponent,
     AddSectionPickerComponent,
-    PageConfigModalComponent
+    PageConfigModalComponent,
   ],
   templateUrl: './builder.component.html',
-  styleUrl: './builder.component.scss'
+  styleUrl: './builder.component.scss',
 })
 export class BuilderComponent implements OnInit {
   readonly builderService = inject(WebsiteBuilderService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private tenantResolver = inject(TenantResolverService);
 
   readonly page = this.builderService.page;
   readonly loading = this.builderService.loading;
@@ -48,11 +48,11 @@ export class BuilderComponent implements OnInit {
   ngOnInit(): void {
     this.builderService.loadPages();
 
-    this.route.paramMap.pipe(
-      map(params => params.get('pageSlug') || 'home')
-    ).subscribe(slug => {
-      this.builderService.loadPage(slug);
-    });
+    this.route.paramMap
+      .pipe(map((params) => params.get('pageSlug') || 'home'))
+      .subscribe((slug) => {
+        this.builderService.loadPage(slug);
+      });
   }
 
   onPageChange(event: Event): void {
@@ -72,7 +72,7 @@ export class BuilderComponent implements OnInit {
     const currentPage = this.page();
     if (!currentPage) return;
 
-    const pageDetails = this.pages().find(p => p.id === currentPage.pageId);
+    const pageDetails = this.pages().find((p) => p.id === currentPage.pageId);
     if (pageDetails) {
       this.selectedPageToEdit.set(pageDetails);
       this.pageConfigOpen.set(true);
@@ -88,9 +88,12 @@ export class BuilderComponent implements OnInit {
         next: () => {
           this.pageConfigOpen.set(false);
           this.builderService.loadPages();
-          this.router.navigate([parentPath, payload.slug], { relativeTo: this.route });
+          this.router.navigate([parentPath, payload.slug], {
+            relativeTo: this.route,
+          });
         },
-        error: (err) => alert(err.error?.message || 'Failed to update page settings.')
+        error: (err) =>
+          alert(err.error?.message || 'Failed to update page settings.'),
       });
     } else {
       // Create new page
@@ -98,9 +101,11 @@ export class BuilderComponent implements OnInit {
         next: (res) => {
           this.pageConfigOpen.set(false);
           this.builderService.loadPages();
-          this.router.navigate([parentPath, res.data.slug], { relativeTo: this.route });
+          this.router.navigate([parentPath, res.data.slug], {
+            relativeTo: this.route,
+          });
         },
-        error: (err) => alert(err.error?.message || 'Failed to create page.')
+        error: (err) => alert(err.error?.message || 'Failed to create page.'),
       });
     }
   }
@@ -109,16 +114,20 @@ export class BuilderComponent implements OnInit {
     const page = this.page();
     if (!page) return;
 
-    const confirmDel = confirm(`Are you sure you want to delete the page "${page.pageName}"? All its section mappings will be removed.`);
+    const confirmDel = confirm(
+      `Are you sure you want to delete the page "${page.pageName}"? All its section mappings will be removed.`,
+    );
     if (!confirmDel) return;
 
     this.builderService.deletePage(page.pageId).subscribe({
       next: () => {
         this.builderService.loadPages();
-        const parentPath = this.route.snapshot.params['pageSlug'] ? '../' : './';
+        const parentPath = this.route.snapshot.params['pageSlug']
+          ? '../'
+          : './';
         this.router.navigate([parentPath, 'home'], { relativeTo: this.route });
       },
-      error: (err) => alert(err.error?.message || 'Failed to delete page.')
+      error: (err) => alert(err.error?.message || 'Failed to delete page.'),
     });
   }
 
@@ -131,23 +140,38 @@ export class BuilderComponent implements OnInit {
         this.addSectionOpen.set(false);
         this.builderService.loadPage(page.pageName);
       },
-      error: (err) => alert(err.error?.message || 'Failed to add section.')
+      error: (err) => alert(err.error?.message || 'Failed to add section.'),
     });
   }
+
+  // ...existing code...
 
   deleteSection(pageSectionId: string): void {
     const page = this.page();
     if (!page) return;
 
-    const confirmDel = confirm('Are you sure you want to delete this section from the page? Any settings you configured will be preserved if you add this layout section again later.');
+    const confirmDel = confirm(
+      'Are you sure you want to delete this section from the page? Any settings you configured will be preserved if you add this layout section again later.',
+    );
     if (!confirmDel) return;
 
     this.builderService.deleteSection(pageSectionId).subscribe({
       next: () => {
         this.builderService.loadPage(page.pageName);
       },
-      error: (err) => alert(err.error?.message || 'Failed to delete section.')
+      error: (err) => alert(err.error?.message || 'Failed to delete section.'),
     });
+  }
+
+  onReorder(moveData: { id: string; direction: 'up' | 'down' }): void {
+    this.builderService.reorder(moveData);
+  }
+
+  previewPage(): void {
+    const slug = this.builderService.currentSlug();
+    const path = slug === 'home' ? '' : slug;
+    const url = this.tenantResolver.buildUrl(path);
+    window.open(url, '_blank');
   }
 
   saveAll(): void {

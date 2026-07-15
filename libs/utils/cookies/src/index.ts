@@ -67,6 +67,9 @@ export function getCookie(name: string): string | null {
     );
     return null;
   }
+  if (typeof document === 'undefined') {
+    return null; // Safe fallback for SSR
+  }
   const nameEQ = `${name}=`;
   const ca = document.cookie ? document.cookie.split(';') : [];
   for (let i = 0; i < ca.length; i++) {
@@ -88,6 +91,10 @@ export function setCookie(
       `[cookie.util] Cookie "${name}" is HttpOnly and must be set by the server via Set-Cookie header.`,
     );
     return;
+  }
+
+  if (typeof document === 'undefined') {
+    return; // Safe fallback for SSR
   }
 
   let expires = '';
@@ -112,6 +119,11 @@ export function deleteCookie(name: string): void {
     );
     return;
   }
+
+  if (typeof document === 'undefined') {
+    return; // Safe fallback for SSR
+  }
+
   const sameSiteAttr = resolved.sameSite
     ? `; SameSite=${resolved.sameSite}`
     : '';

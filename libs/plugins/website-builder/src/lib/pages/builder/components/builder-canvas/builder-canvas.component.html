@@ -1,58 +1,66 @@
-<div class="canvas-container">
+<div class="canvas-container" style="overflow-y: scroll;">
   <div class="canvas-viewport">
     @if (sections().length === 0) {
-      <div class="canvas-empty">
-        <div class="empty-icon">🌐</div>
-        <h2>Start building your page</h2>
-        <p>No sections added yet. Click "+ Add Section" to begin.</p>
-      </div>
+    <div class="canvas-empty">
+      <div class="empty-icon">🌐</div>
+      <h2>Start building your page</h2>
+      <p>No sections added yet. Click the button below to begin.</p>
+      <button class="btn-primary" (click)="addSection.emit()" style="margin-top: 16px;">
+        <av-svg-icon name="plus" [size]="14"></av-svg-icon>
+        <span>Add Section</span>
+      </button>
+    </div>
     } @else {
-      <div class="sections-stack">
-        @for (sec of sections(); track sec.companySectionId) {
-          <div
-            class="section-card"
-            [class.active]="selectedId() === sec.companySectionId"
-            [class.hidden-sec]="!sec.isVisible"
-            (click)="onSelect(sec)"
-          >
-            <!-- Canvas Item Preview Header / Placeholder -->
-            <div class="card-preview">
-              @if (sec.previewImage) {
-                <img [src]="sec.previewImage" [alt]="sec.layoutName" class="preview-img">
-              } @else {
-                <div class="preview-placeholder">
-                  <av-svg-icon name="image" [size]="32" class="placeholder-icon"></av-svg-icon>
-                  <span class="placeholder-text">{{ sec.layoutName }}</span>
-                </div>
-              }
-            </div>
-
-            <!-- Floating Overlay Control Toolbar -->
-            <div class="section-overlay">
-              <span class="section-tag">{{ sec.typeName }}</span>
-              <div class="overlay-actions">
-                <button
-                  class="overlay-btn"
-                  (click)="onChangeLayout(sec, $event)"
-                  title="Change Layout Template"
-                >
-                  <av-svg-icon name="layout" [size]="14"></av-svg-icon>
-                </button>
-                <button
-                  class="overlay-btn"
-                  (click)="toggleVisible(sec, $event)"
-                  [title]="sec.isVisible ? 'Hide Section' : 'Show Section'"
-                >
-                  <av-svg-icon
-                    [name]="sec.isVisible ? 'eye' : 'eye-off'"
-                    [size]="14"
-                  ></av-svg-icon>
-                </button>
-              </div>
-            </div>
+    <div class="sections-stack">
+      @for (sec of sections(); track sec.companySectionId; let idx = $index) {
+      <div class="section-card" [class.active]="selectedId() === sec.companySectionId"
+        [class.hidden-sec]="!sec.isVisible" (click)="onSelect(sec)">
+        <!-- Canvas Item Preview Header / Placeholder -->
+        <div class="card-preview">
+          @if (sec.previewImage) {
+          <img [src]="sec.previewImage" [alt]="sec.layoutName" class="preview-img">
+          } @else {
+          <div class="preview-placeholder">
+            <av-svg-icon name="image" [size]="32" class="placeholder-icon"></av-svg-icon>
+            <span class="placeholder-text">{{ sec.layoutName }}</span>
           </div>
-        }
+          }
+        </div>
+
+        <!-- Floating Overlay Control Toolbar -->
+        <div class="section-overlay">
+          <span class="section-tag">{{ sec.typeName }}</span>
+          <div class="overlay-actions top-right">
+            <button class="overlay-btn small-btn" [disabled]="idx === 0" (click)="moveUp(sec, $event)" title="Move Up">
+              <av-svg-icon name="chevron-up" [size]="14"></av-svg-icon>
+            </button>
+            <button class="overlay-btn small-btn" [disabled]="idx === sections().length - 1" (click)="moveDown(sec, $event)" title="Move Down">
+              <av-svg-icon name="chevron-down" [size]="14"></av-svg-icon>
+            </button>
+          </div>
+          
+          <div class="overlay-actions bottom-right">
+            <button class="overlay-btn small-btn" (click)="onChangeLayout(sec, $event)" title="Change Layout Template">
+              <av-svg-icon name="layout" [size]="14"></av-svg-icon>
+            </button>
+            <button class="overlay-btn small-btn" (click)="toggleVisible(sec, $event)"
+              [title]="sec.isVisible ? 'Hide Section' : 'Show Section'">
+              <av-svg-icon [name]="sec.isVisible ? 'eye' : 'eye-off'" [size]="14"></av-svg-icon>
+            </button>
+            <button class="overlay-btn small-btn btn-danger" (click)="deleteSec(sec, $event)" title="Delete Section">
+              <av-svg-icon name="trash" [size]="14"></av-svg-icon>
+            </button>
+          </div>
+        </div>
       </div>
+      }
+      
+      <!-- Add Section Button -->
+      <div class="add-section-card" (click)="addSection.emit()">
+        <av-svg-icon name="plus" [size]="24" class="add-icon"></av-svg-icon>
+        <span class="add-text">Add Section</span>
+      </div>
+    </div>
     }
   </div>
 </div>

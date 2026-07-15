@@ -127,10 +127,20 @@
   display: flex;
   overflow: hidden;
   position: relative;
+
+  ::ng-deep av-builder-canvas {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+  }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .page-selector-wrapper {
@@ -187,5 +197,78 @@
   &.btn-danger:hover {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
+  }
+}
+
+/* Responsive adjustments for mobile and tablets */
+@media (max-width: 992px) {
+  .builder-workspace {
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .builder-bar {
+    flex-direction: column;
+    height: auto;
+    padding: 10px 12px;
+    gap: 12px;
+  }
+  .bar-left {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    gap: 8px;
+    align-items: center;
+  }
+  .builder-title {
+    display: none;
+  }
+  .bar-sep {
+    display: none;
+  }
+  .builder-actions {
+    width: 100%;
+    justify-content: center;
+    gap: 12px;
+  }
+  .hide-on-mobile {
+    display: none;
+  }
+  .page-selector-wrapper {
+    flex-wrap: nowrap;
+    justify-content: center;
+    margin-left: 0;
+    border: none;
+    background: transparent;
+    width: 100%; /* force to full width so it goes on a new line on small screens */
+  }
+  .page-select {
+    max-width: 120px;
+    padding: 0 4px;
+    font-size: 11px;
+  }
+  .btn-action-icon {
+    flex-shrink: 0;
+  }
+
+  ::ng-deep av-layers-panel {
+    width: 100% !important;
+    max-height: 350px;
+    flex-shrink: 0;
+    border-right: none !important;
+    border-bottom: 1px solid var(--sidebar-border);
+  }
+
+  ::ng-deep av-builder-canvas {
+    width: 100% !important;
+    min-height: 200px;
+    flex-shrink: 0;
+  }
+
+  ::ng-deep av-properties-panel {
+    width: 100% !important;
+    min-height: 400px;
+    flex-shrink: 0;
+    border-left: none !important;
+    border-top: 1px solid var(--sidebar-border);
   }
 }

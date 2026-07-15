@@ -10,8 +10,8 @@ export class ApiService {
   private readonly http = inject(HttpClient);
 
   // Updated with the real backend URL provided by the user
-  private readonly baseUrl = 'https://localhost:44391/api/v1';
-  //private readonly baseUrl = 'https://aliensverses.runasp.net/api/v1';
+  //private readonly baseUrl = 'https://localhost:44391/api/v1';
+  private readonly baseUrl = 'https://aliensverses.runasp.net/api/v1';
 
   get<T>(path: string): Observable<ResponseAPI<T>> {
     return this.http.get<ResponseAPI<T>>(`${this.baseUrl}/${path}`, {

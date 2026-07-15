@@ -68,7 +68,7 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly visibleSections = computed(() =>
     [...this.sections()]
       .filter((section) => section.isVisible)
-      .sort((a, b) => a.sortOrder - b.sortOrder),
+      .sort((a, b) => (a.sort ?? a.sortOrder) - (b.sort ?? b.sortOrder)),
   );
 
   readonly menuSections = computed(() =>
@@ -234,8 +234,21 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.themeService.toggleTheme();
   }
 
-  scrollToSection(id: string) {
+  buildLink(id: string): string {
+    return this.router.url.split('#')[0] + '#' + id;
+  }
+
+  scrollToSection(event: Event, id: string) {
     this.isMobileMenuOpen.set(false);
+    
+    if (event) {
+      const mouseEvent = event as MouseEvent;
+      if (mouseEvent.ctrlKey || mouseEvent.metaKey || mouseEvent.button === 1) {
+        return; // Allow native 'open in new tab' behavior
+      }
+      event.preventDefault();
+    }
+    
     this.router.navigate([], { fragment: id, queryParamsHandling: 'preserve' });
     const el = document.getElementById(id);
     if (el) {
@@ -261,8 +274,19 @@ export class LandingPageComponent implements OnInit, AfterViewInit, OnDestroy {
     window.open(`https://wa.me/${phone}`, '_blank');
   }
 
-  launchErp(): void {
-    const dashboardPath = this.tenantResolver.buildUrl('erp/dashboard');
+  getErpLink(): string {
+    return this.tenantResolver.buildUrl('erp/dashboard');
+  }
+
+  launchErp(event?: Event): void {
+    if (event) {
+      const mouseEvent = event as MouseEvent;
+      if (mouseEvent.ctrlKey || mouseEvent.metaKey || mouseEvent.button === 1) {
+        return; // Allow native 'open in new tab' behavior
+      }
+      event.preventDefault();
+    }
+    const dashboardPath = this.getErpLink();
     this.router.navigateByUrl(dashboardPath);
   }
 

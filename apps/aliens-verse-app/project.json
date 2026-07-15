@@ -20,7 +20,12 @@
             "input": "apps/aliens-verse-app/public"
           }
         ],
-        "styles": ["apps/aliens-verse-app/src/styles.scss"]
+        "styles": ["apps/aliens-verse-app/src/styles.scss"],
+        "server": "apps/aliens-verse-app/src/main.server.ts",
+        "ssr": {
+          "entry": "apps/aliens-verse-app/src/server.ts"
+        },
+        "outputMode": "server"
       },
       "configurations": {
         "production": {
@@ -49,6 +54,9 @@
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
+      "options": {
+        "ssl": true
+      },
       "configurations": {
         "production": {
           "buildTarget": "aliens-verse-app:build:production"

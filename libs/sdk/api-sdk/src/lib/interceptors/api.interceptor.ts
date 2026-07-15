@@ -1,5 +1,5 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject, PLATFORM_ID } from '@angular/core';
+import { inject, PLATFORM_ID, REQUEST } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { TenantResolverService } from '../services/tenant-resolver.service';
 import { PublicContextService } from '../services/public-context.service';
@@ -12,10 +12,23 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   let headers = req.headers;
   const slug = tenantResolver.getCompanySlugForHeader();
 
+  const serverRequest: any = inject(REQUEST, { optional: true });
+
+  let cookieString = '';
+  if (isPlatformBrowser(platformId)) {
+    cookieString = document.cookie || '';
+  } else if (serverRequest) {
+    if (typeof serverRequest.headers?.get === 'function') {
+      cookieString = serverRequest.headers.get('cookie') || '';
+    } else if (serverRequest.headers?.cookie) {
+      cookieString = serverRequest.headers.cookie || '';
+    }
+  }
+
   const getCookie = (name: string): string | null => {
-    if (!isPlatformBrowser(platformId)) return null;
+    if (!cookieString) return null;
     const nameLenPlus = (name.length + 1);
-    return document.cookie
+    return cookieString
       .split(';')
       .map(c => c.trim())
       .filter(cookie => cookie.substring(0, nameLenPlus) === `${name}=`)
@@ -61,6 +74,11 @@ export const apiInterceptor: HttpInterceptorFn = (req, next) => {
   const csrfToken = getCookie('csrf_token');
   if (csrfToken) {
     headers = headers.set('X-CSRF-Token', csrfToken);
+  }
+
+  // On the server, we MUST forward all cookies to the API manually
+  if (!isPlatformBrowser(platformId) && cookieString) {
+    headers = headers.set('Cookie', cookieString);
   }
 
   const clonedRequest = req.clone({

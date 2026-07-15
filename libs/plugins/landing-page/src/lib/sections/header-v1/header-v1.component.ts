@@ -46,14 +46,27 @@ interface HeaderMenuItem {
           }}</span>
         </a>
         <ul class="nav-links">
-          <li *ngFor="let item of menuItems">
-            <button
+          <li *ngFor="let item of sectionItems">
+            <a
               class="nav-link"
               [class.active]="activeSection === item.url.substring(1)"
+              [href]="buildLink(item.url)"
               (click)="scrollToSection($event, item.url)"
             >
               {{ item.label }}
+            </a>
+          </li>
+          
+          <li class="nav-dropdown" *ngIf="pageItems.length > 0" (mouseenter)="isDropdownOpen = true" (mouseleave)="isDropdownOpen = false" style="position: relative; display: flex; align-items: center; height: 72px;">
+            <button class="nav-link dropdown-toggle" style="display: flex; align-items: center; gap: 4px; padding-right: 8px;">
+              Pages
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </button>
+            <div class="dropdown-menu" *ngIf="isDropdownOpen" style="position: absolute; top: 100%; left: 0; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 8px; min-width: 160px; box-shadow: var(--shadow); z-index: 1000; display: flex; flex-direction: column; gap: 4px; margin-top: 0px;">
+              <a *ngFor="let page of pageItems" class="nav-link" style="text-align: left; width: 100%; justify-content: flex-start; display: flex; text-decoration: none;" [href]="buildLink(page.url)" (click)="scrollToSection($event, page.url); isDropdownOpen = false;">
+                {{ page.label }}
+              </a>
+            </div>
           </li>
         </ul>
         <div class="nav-actions">
@@ -100,10 +113,27 @@ interface HeaderMenuItem {
             </svg>
           </button>
           <button class="nav-cta" (click)="launchErp()">Launch ERP ›</button>
-          <button class="hamburger">
-            <span></span><span></span><span></span>
+          <button class="hamburger" (click)="toggleMobileMenu()">
+            <span [class.open]="isMobileMenuOpen"></span>
+            <span [class.open]="isMobileMenuOpen"></span>
+            <span [class.open]="isMobileMenuOpen"></span>
           </button>
         </div>
+      </div>
+      
+      <!-- Mobile Menu -->
+      <div class="mobile-menu" *ngIf="isMobileMenuOpen">
+        <a class="mobile-link" style="text-decoration: none;" *ngFor="let item of sectionItems" [href]="buildLink(item.url)" (click)="scrollToSection($event, item.url); isMobileMenuOpen = false;">
+          {{ item.label }}
+        </a>
+        <ng-container *ngIf="pageItems.length > 0">
+          <div style="padding: 12px 8px 4px 8px; font-weight: 700; color: var(--text-primary); font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">
+            Pages
+          </div>
+          <a class="mobile-link" style="padding-left: 20px; font-weight: 400; text-decoration: none;" *ngFor="let page of pageItems" [href]="buildLink(page.url)" (click)="scrollToSection($event, page.url); isMobileMenuOpen = false;">
+            {{ page.label }}
+          </a>
+        </ng-container>
       </div>
     </nav>
   `,
@@ -187,28 +217,63 @@ export class HeaderV1Component implements OnInit, AfterViewInit {
       : info.company_logo || info.company_logo_dark;
   });
 
-  get menuItems(): HeaderMenuItem[] {
-    const dynamicItems = this.publicCtx
+  isMobileMenuOpen = false;
+  isDropdownOpen = false;
+
+  get sectionItems(): HeaderMenuItem[] {
+    return this.publicCtx
       .sections()
       .filter((s) => s.isVisible && s.showInMenu && s.menuTitle)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .sort((a, b) => (a.sort ?? a.sortOrder ?? a.sort_order ?? a.order ?? 0) - (b.sortOrder ?? b.sort ?? b.sort_order ?? b.order ?? 0))
       .map((s) => ({
         label: s.menuTitle!,
         url: s.anchorKey
           ? `#${s.anchorKey}`
-          : `#${s.menuTitle!.toLowerCase().replace(/\\s+/g, '-')}`,
+          : `#${s.menuTitle!.toLowerCase().replace(/\s+/g, '-')}`,
       }));
-    return dynamicItems;
+  }
+
+  get pageItems(): HeaderMenuItem[] {
+    return this.publicCtx.pages()
+      .filter((p: any) => p.isInNavHeader && !p.isHomePage)
+      .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map((p: any) => ({
+        label: p.navLabel || p.name,
+        url: `/${p.slug}`,
+      }));
+  }
+
+  toggleMobileMenu() {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  buildLink(url: string): string {
+    if (url.startsWith('#')) {
+      return this.router.url.split('#')[0] + url;
+    }
+    return url === '/' ? this.tenantResolver.buildUrl('') : this.tenantResolver.buildUrl(url.substring(1));
   }
 
   scrollToSection(event: Event, url: string) {
-    if (url.startsWith('#') && this.isBrowser) {
-      event.preventDefault();
-      const id = url.substring(1);
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (url.startsWith('#')) {
+      if (this.isBrowser) {
+        event.preventDefault();
+        const id = url.substring(1);
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
       }
+    } else {
+      // Allow default link behavior for middle-click or Ctrl+click
+      const mouseEvent = event as MouseEvent;
+      if (mouseEvent.ctrlKey || mouseEvent.metaKey || mouseEvent.button === 1) {
+        return; // Browser will handle opening in new tab
+      }
+      
+      event.preventDefault();
+      const path = url === '/' ? this.tenantResolver.buildUrl('') : this.tenantResolver.buildUrl(url.substring(1));
+      this.router.navigateByUrl(path);
     }
   }
 

@@ -49,6 +49,7 @@ export class PublicContextService {
   private _languages = signal<Language[]>([]);
   private _currentLang = signal<Language | null>(null);
   private _sections = signal<any[]>([]);
+  private _pages = signal<any[]>([]);
   private _loadingSections = signal<boolean>(false);
   private _themeApplied = signal<boolean>(false);
 
@@ -59,6 +60,7 @@ export class PublicContextService {
   readonly languages = computed(() => this._languages());
   readonly currentLang = computed(() => this._currentLang());
   readonly sections = computed(() => this._sections());
+  readonly pages = computed(() => this._pages());
   readonly loadingSections = computed(() => this._loadingSections());
 
   private profileRequestId = 0;
@@ -161,6 +163,16 @@ export class PublicContextService {
           const defaultLang = mappedLangs.find(l => l.isDefault) || mappedLangs[0];
           this._currentLang.set(defaultLang);
         }
+
+        // Fetch pages from web-profile/full
+        try {
+          const profileRes = await firstValueFrom(this.api.get<any>('web-profile/full'));
+          if (profileRes?.data?.pages) {
+            this._pages.set(profileRes.data.pages);
+          }
+        } catch (e) {
+          console.warn('Failed to fetch web-profile pages', e);
+        }
       } catch (err) {
         if (requestId === this.profileRequestId && versionToken === this.tenantResolver.tenantVersionToken()) {
           throw err; // Re-throw so guard handles fallback redirect
@@ -217,6 +229,7 @@ export class PublicContextService {
     this._languages.set([]);
     this._currentLang.set(null);
     this._sections.set([]);
+    this._pages.set([]);
     this._loadingSections.set(false);
   }
 

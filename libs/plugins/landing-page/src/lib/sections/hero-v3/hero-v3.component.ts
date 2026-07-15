@@ -7,9 +7,12 @@ import { HeroSectionData } from '@aliens-verse/api-sdk';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <section class="hero-v3" style="background: var(--colors-background-surface); color: var(--colors-text-primary); padding: var(--spacing-xl); text-align: center;">
+    <section
+      class="hero-v3"
+      style="background: var(--colors-background-surface); color: var(--colors-text-primary); padding: var(--spacing-xl); text-align: center;"
+    >
       <h3>Hero Version 3</h3>
-      @if (data.items?.length) {
+      @if (data.items.length) {
         @for (slide of data.items; track slide.title) {
           <article class="hero-slide-v3">
             <h1>{{ slide.title }}</h1>
