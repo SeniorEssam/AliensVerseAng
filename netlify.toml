@@ -1,5 +1,3 @@
-[build]
-  publish = "dist/apps/aliens-verse-app/browser"
 
 [[redirects]]
   from = "/*"
