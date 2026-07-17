@@ -16,7 +16,13 @@
         "inlineStyleLanguage": "scss",
         "assets": [
           {
+            "glob": "_redirects",
+            "input": "apps/aliens-verse-app/public",
+            "output": "../"
+          },
+          {
             "glob": "**/*",
+            "ignore": ["_redirects"],
             "input": "apps/aliens-verse-app/public"
           }
         ],
