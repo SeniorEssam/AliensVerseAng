@@ -76,11 +76,6 @@ export function buildRoutes(config: typeof tenantConfig): Route[] {
 
   if (config.mode === 'multi') {
     return [
-      {
-        path: 'tenant-not-found',
-        component: TenantNotFoundComponent,
-        pathMatch: 'full',
-      },
       { path: '', redirectTo: config.defaultCompanySlug, pathMatch: 'full' },
 
       {
@@ -90,6 +85,11 @@ export function buildRoutes(config: typeof tenantConfig): Route[] {
         canActivateChild: [tenantActivateChildGuard],
         runGuardsAndResolvers: 'always',
         children: [
+          {
+            path: 'tenant-not-found',
+            component: TenantNotFoundComponent,
+            pathMatch: 'full',
+          },
           {
             path: 'erp',
             component: ERPShellComponent,

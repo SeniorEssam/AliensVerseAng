@@ -21,6 +21,11 @@ async function activateTenant(stateUrl: string): Promise<boolean | UrlTree> {
 
   tenantResolver.resolveTenant(stateUrl);
 
+  // Bypass profile fetching for the tenant-not-found route to prevent infinite loops
+  if (stateUrl.includes('tenant-not-found')) {
+    return true;
+  }
+
   const resolvedSlug = tenantResolver.companySlug();
   const loadedSlug = publicContext.companyInfo()?.company_slug; // 🔧 FIX: snake_case
 
@@ -102,7 +107,7 @@ export const tenantActivateChildGuard: CanActivateChildFn = (childRoute, state) 
  */
 function handleFailedTenantRedirect(router: Router, resolvedSlug: string | null): UrlTree {
   if (resolvedSlug === tenantConfig.defaultCompanySlug) {
-    return router.parseUrl('/tenant-not-found');
+    return router.parseUrl(`/${tenantConfig.defaultCompanySlug}/tenant-not-found`);
   }
   return router.parseUrl(`/${tenantConfig.defaultCompanySlug}`);
 }
