@@ -56,7 +56,7 @@
       "options": {
         "commands": [
           "nx build aliens-verse-app --configuration=production",
-          "echo /* /index.html 200 > dist/apps/aliens-verse-app/browser/_redirects"
+          "echo /* /index.csr.html 200 > dist/apps/aliens-verse-app/browser/_redirects"
         ],
         "parallel": false
       }
