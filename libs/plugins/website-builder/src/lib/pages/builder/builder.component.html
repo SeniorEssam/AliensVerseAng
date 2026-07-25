@@ -11,7 +11,7 @@
 
       <!-- Page Selector Dropdown -->
       <div class="page-selector-wrapper">
-        <select class="page-select" [value]="builderService.currentSlug()" (change)="onPageChange($event)">
+        <select class="page-select" [value]="selectedSlug()" (change)="onPageChange($event)">
           @for (p of pages(); track p.id) {
             <option [value]="p.slug">{{ p.pageName }} ({{ p.slug }})</option>
           }

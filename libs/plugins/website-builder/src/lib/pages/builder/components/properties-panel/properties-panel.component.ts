@@ -39,6 +39,9 @@ export class PropertiesPanelComponent implements OnChanges {
   uploadingKey = signal<string | null>(null);
   uploadingItemKey = signal<string | null>(null);
 
+  // Hero Slide Translations Modal state
+  slideTranslationsModal = signal<{ open: boolean; slide: any | null; slideIndex: number }>({ open: false, slide: null, slideIndex: -1 });
+
   // Cached parsed list data
   private parsedLists: Record<string, any[]> = {};
 
@@ -124,7 +127,10 @@ export class PropertiesPanelComponent implements OnChanges {
         subTitle: 'Slide Subtitle',
         description: 'Slide description goes here...',
         buttonText: 'Explore Now',
-        buttonUrl: '#'
+        buttonUrl: '#',
+        imageUrl: '',
+        videoUrl: '',
+        translations: []
       };
     } else if (key === 'pricing_plans_json') {
       newItem = {
@@ -287,5 +293,65 @@ export class PropertiesPanelComponent implements OnChanges {
     if (confirm(`Are you sure you want to delete the setting "${this.getSettingKeyName(key)}"?`)) {
       delete this.settingsModel[key];
     }
+  }
+
+  // ─── Hero Slide Translations Modal ───────────────────────────────────────────
+
+  openTranslationsModal(key: string, slide: any, slideIndex: number): void {
+    if (!slide.translations) slide.translations = [];
+    this.slideTranslationsModal.set({ open: true, slide, slideIndex });
+  }
+
+  closeTranslationsModal(): void {
+    this.saveJsonList('slides_json');
+    this.slideTranslationsModal.set({ open: false, slide: null, slideIndex: -1 });
+  }
+
+  addTranslation(slide: any): void {
+    if (!slide.translations) slide.translations = [];
+    const langs = this.availableLanguages();
+    const usedLangCodes = slide.translations.map((t: any) => t.languageCode);
+    const availableLang = langs.find(l => !usedLangCodes.includes(l.id));
+    if (!availableLang) {
+      alert('All available languages already have a translation for this slide.');
+      return;
+    }
+    slide.translations.push({
+      id: '00000000-0000-0000-0000-000000000000',
+      languageCode: availableLang.id,
+      title: slide.title || '',
+      subTitle: slide.subTitle || '',
+      description: slide.description || '',
+      buttonText: slide.buttonText || '',
+      buttonUrl: slide.buttonUrl || '',
+      imageUrl: '',
+      videoUrl: ''
+    });
+  }
+
+  deleteTranslation(slide: any, index: number): void {
+    if (confirm('Are you sure you want to delete this translation?')) {
+      slide.translations.splice(index, 1);
+    }
+  }
+
+  onTranslationImageSelected(slide: any, translation: any, event: Event): void {
+    const inputEl = event.target as HTMLInputElement;
+    const file = inputEl.files?.[0];
+    if (!file) return;
+
+    const uniqueKey = 'trans-' + translation.languageCode;
+    this.uploadingItemKey.set(uniqueKey);
+
+    this.mediaUpload.uploadTemp(file).subscribe({
+      next: res => {
+        translation.imageUrl = res.url;
+        this.uploadingItemKey.set(null);
+      },
+      error: () => {
+        this.uploadingItemKey.set(null);
+        alert('Image upload failed. Please try again.');
+      }
+    });
   }
 }

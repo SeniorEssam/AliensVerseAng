@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { map } from 'rxjs/operators';
@@ -45,6 +45,21 @@ export class BuilderComponent implements OnInit {
   readonly pageConfigOpen = signal(false);
   readonly selectedPageToEdit = signal<any | null>(null);
 
+  // Local signal bound to <select> — synced via effect() after pages load
+  readonly selectedSlug = signal<string>('');
+
+  constructor() {
+    // Whenever currentSlug OR pages changes, update selectedSlug
+    // This fixes the bug where the dropdown showed wrong name on first change
+    effect(() => {
+      const slug = this.builderService.currentSlug();
+      const pages = this.pages();
+      if (slug && pages.length > 0) {
+        this.selectedSlug.set(slug);
+      }
+    });
+  }
+
   ngOnInit(): void {
     this.builderService.loadPages();
 
@@ -57,10 +72,12 @@ export class BuilderComponent implements OnInit {
 
   onPageChange(event: Event): void {
     const slug = (event.target as HTMLSelectElement).value;
-    if (slug) {
-      const parentPath = this.route.snapshot.params['pageSlug'] ? '../' : './';
-      this.router.navigate([parentPath, slug], { relativeTo: this.route });
-    }
+    if (!slug) return;
+    // Update local signal immediately so the dropdown reflects the new value right away
+    this.selectedSlug.set(slug);
+    const hasSlugParam = !!this.route.snapshot.params['pageSlug'];
+    const parentPath = hasSlugParam ? '../' : './';
+    this.router.navigate([parentPath, slug], { relativeTo: this.route });
   }
 
   showCreatePage(): void {

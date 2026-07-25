@@ -487,43 +487,69 @@
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MOBILE OVERLAY SIDEBAR
+// MOBILE: Hamburger-based sidebar
+// On mobile the sidebar is COMPLETELY hidden by default (not just collapsed).
+// It slides in from the left as a drawer when the hamburger is clicked.
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Hamburger button: hidden on desktop, visible on mobile
+.hamburger-btn {
+  display: none;
+  @media (max-width: 992px) {
+    display: flex;
+  }
+}
+
 @media (max-width: 992px) {
+  // Sidebar: always fixed, starts off-screen (hidden completely)
   .erp-sidebar {
     position: fixed;
-    left: 0;
+    left: -100%;   // Off-screen by default
     top: 0;
     z-index: 1000;
     height: 100vh;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1);
+    width: var(--sidebar-w) !important;
+    min-width: var(--sidebar-w) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+    transition:
+      left var(--sidebar-transition),
+      box-shadow var(--sidebar-transition);
   }
 
+  // When NOT collapsed (= opened by hamburger click) → slide sidebar in
+  .erp-root:not(.sidebar-collapsed) .erp-sidebar {
+    left: 0;
+  }
+
+  // Dark mode shadow
   .erp-root[data-theme="dark"] .erp-sidebar {
     box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
   }
 
+  // Main area always takes full width on mobile
+  .erp-main {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  // Context text size
   .ctx-store, .ctx-branch, .ctx-sep {
     font-size: 12px;
   }
-  
+
   .topbar-left {
     gap: 8px;
   }
 
+  // Backdrop: shown when sidebar is open (not collapsed) on mobile
   .sidebar-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(0, 0, 0, 0.45);
     z-index: 999;
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
-    animation: fadeSlideIn 0.2s ease;
-  }
-
-  .erp-main {
-    margin-left: var(--sidebar-collapsed-w);
-    width: calc(100% - var(--sidebar-collapsed-w));
+    animation: fadeIn 0.2s ease;
   }
 }
 
@@ -532,4 +558,9 @@
   @media (max-width: 992px) {
     display: block;
   }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

@@ -79,8 +79,18 @@
     <!-- TOPBAR -->
     <header class="erp-topbar" role="banner">
 
-      <!-- Left: Breadcrumb / context -->
+      <!-- Left: Hamburger + Breadcrumb / context -->
       <div class="topbar-left">
+        <!-- Hamburger button: visible on mobile only -->
+        <button
+          class="icon-btn hamburger-btn"
+          (click)="toggleSidebar()"
+          title="Toggle navigation"
+          type="button"
+          aria-label="Toggle sidebar"
+        >
+          <av-svg-icon name="menu" [size]="20"/>
+        </button>
         <div class="topbar-context">
           <span class="ctx-store">{{ currentStoreName() }}</span>
           <span class="ctx-sep">/</span>

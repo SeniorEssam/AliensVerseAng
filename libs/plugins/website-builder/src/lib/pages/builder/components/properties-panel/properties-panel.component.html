@@ -54,6 +54,13 @@
                         <div class="item-card-header">
                           <span class="item-index">Slide #{{ idx + 1 }}</span>
                           <div class="item-header-actions">
+                            <!-- Translations Modal Button -->
+                            <button type="button" class="action-btn translate-btn" (click)="openTranslationsModal(key, slide, idx)" title="Manage Translations">
+                              <av-svg-icon name="globe" [size]="11"></av-svg-icon>
+                              @if (slide.translations?.length > 0) {
+                                <span class="trans-count-badge">{{ slide.translations.length }}</span>
+                              }
+                            </button>
                             <button type="button" class="action-btn sort-btn" (click)="moveItemUp(key, idx)" [disabled]="idx === 0">
                               <av-svg-icon name="arrow-up" [size]="10"></av-svg-icon>
                             </button>
@@ -68,6 +75,36 @@
                           </div>
                         </div>
                         <div class="item-card-body">
+                          <!-- Image Upload -->
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Slide Image / Thumbnail</label>
+                            <div class="image-upload-row">
+                              @if (slide.imageUrl) {
+                                <img [src]="slide.imageUrl" class="item-thumb-preview" alt="Slide image"/>
+                              }
+                              <label class="upload-btn-sm">
+                                @if (uploadingItemKey() === key + '-' + slide.id + '-imageUrl') {
+                                  <span>Uploading...</span>
+                                } @else {
+                                  <av-svg-icon name="upload" [size]="12"></av-svg-icon>
+                                  <span>{{ slide.imageUrl ? 'Change' : 'Upload' }} Image</span>
+                                }
+                                <input type="file" accept="image/*" style="display:none"
+                                  (change)="onItemFileSelected(key, slide, 'imageUrl', $event)">
+                              </label>
+                              @if (slide.imageUrl) {
+                                <button type="button" class="action-btn delete-btn" (click)="slide.imageUrl=''; saveJsonList(key)" title="Remove image">
+                                  <av-svg-icon name="x" [size]="10"></av-svg-icon>
+                                </button>
+                              }
+                            </div>
+                          </div>
+                          <!-- Video URL -->
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Video URL (YouTube embed or direct link)</label>
+                            <input type="text" [(ngModel)]="slide.videoUrl" (ngModelChange)="saveJsonList(key)"
+                              class="sub-field-input" placeholder="https://www.youtube.com/embed/...">
+                          </div>
                           <div class="sub-form-group">
                             <label class="sub-field-label">Slide Title</label>
                             <input type="text" [(ngModel)]="slide.title" (ngModelChange)="saveJsonList(key)" class="sub-field-input">
@@ -93,6 +130,103 @@
                         </div>
                       </div>
                     }
+                  </div>
+                </div>
+              }
+
+              <!-- HERO SLIDE TRANSLATIONS MODAL -->
+              @if (slideTranslationsModal().open && slideTranslationsModal().slide) {
+                <div class="modal-backdrop" (click)="closeTranslationsModal()"></div>
+                <div class="modal-box translations-modal">
+                  <div class="modal-header">
+                    <span class="modal-title">Slide Translations — Slide #{{ slideTranslationsModal().slideIndex + 1 }}</span>
+                    <button type="button" class="modal-close-btn" (click)="closeTranslationsModal()">
+                      <av-svg-icon name="x" [size]="14"></av-svg-icon>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <button type="button" class="btn-add-item" (click)="addTranslation(slideTranslationsModal().slide)">
+                      <av-svg-icon name="plus" [size]="12"></av-svg-icon>
+                      <span>Add Translation</span>
+                    </button>
+                    @for (trans of slideTranslationsModal().slide.translations; track trans.languageCode; let tIdx = $index) {
+                      <div class="item-card translation-card">
+                        <div class="item-card-header">
+                          <span class="item-index">{{ getLanguageName(trans.languageCode) }}</span>
+                          <button type="button" class="action-btn delete-btn" (click)="deleteTranslation(slideTranslationsModal().slide, tIdx)">
+                            <av-svg-icon name="trash" [size]="10"></av-svg-icon>
+                          </button>
+                        </div>
+                        <div class="item-card-body">
+                          <!-- Language selector -->
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Language</label>
+                            <select class="sub-field-input" [(ngModel)]="trans.languageCode">
+                              @for (lang of availableLanguages(); track lang.id) {
+                                <option [value]="lang.id">{{ lang.name }}</option>
+                              }
+                            </select>
+                          </div>
+                          <!-- Optional image override -->
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Image Override (optional)</label>
+                            <div class="image-upload-row">
+                              @if (trans.imageUrl) {
+                                <img [src]="trans.imageUrl" class="item-thumb-preview" alt="Translation image"/>
+                              }
+                              <label class="upload-btn-sm">
+                                @if (uploadingItemKey() === 'trans-' + trans.languageCode) {
+                                  <span>Uploading...</span>
+                                } @else {
+                                  <av-svg-icon name="upload" [size]="12"></av-svg-icon>
+                                  <span>{{ trans.imageUrl ? 'Change' : 'Upload' }}</span>
+                                }
+                                <input type="file" accept="image/*" style="display:none"
+                                  (change)="onTranslationImageSelected(slideTranslationsModal().slide, trans, $event)">
+                              </label>
+                              @if (trans.imageUrl) {
+                                <button type="button" class="action-btn delete-btn" (click)="trans.imageUrl = ''" title="Remove">
+                                  <av-svg-icon name="x" [size]="10"></av-svg-icon>
+                                </button>
+                              }
+                            </div>
+                          </div>
+                          <!-- Video URL Override -->
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Video URL Override (optional)</label>
+                            <input type="text" [(ngModel)]="trans.videoUrl" class="sub-field-input" placeholder="https://www.youtube.com/embed/...">
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Title</label>
+                            <input type="text" [(ngModel)]="trans.title" class="sub-field-input">
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Subtitle</label>
+                            <input type="text" [(ngModel)]="trans.subTitle" class="sub-field-input">
+                          </div>
+                          <div class="sub-form-group">
+                            <label class="sub-field-label">Description</label>
+                            <textarea [(ngModel)]="trans.description" class="sub-field-textarea"></textarea>
+                          </div>
+                          <div class="sub-form-row">
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Btn Text</label>
+                              <input type="text" [(ngModel)]="trans.buttonText" class="sub-field-input">
+                            </div>
+                            <div class="sub-form-group flex-1">
+                              <label class="sub-field-label">Btn URL</label>
+                              <input type="text" [(ngModel)]="trans.buttonUrl" class="sub-field-input">
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                    @if (!slideTranslationsModal().slide.translations?.length) {
+                      <p class="empty-properties">No translations yet. Click "Add Translation" to start.</p>
+                    }
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn-primary-sm" (click)="closeTranslationsModal()">Done</button>
                   </div>
                 </div>
               }

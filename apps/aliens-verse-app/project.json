@@ -51,6 +51,16 @@
       },
       "defaultConfiguration": "production"
     },
+    "build-netlify": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "nx build aliens-verse-app --configuration=production",
+          "echo /* /browser/index.html 200 > dist/apps/aliens-verse-app/_redirects"
+        ],
+        "parallel": false
+      }
+    },
     "serve": {
       "continuous": true,
       "executor": "@angular/build:dev-server",
